@@ -1,0 +1,23 @@
+{
+    "name": "code/tema",
+    "description": "",
+    "authors": [
+        {
+            "name": "Michael Luz",
+            "email": "michaelluzpaulo@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Tema\\": ""
+        }
+    }
+}

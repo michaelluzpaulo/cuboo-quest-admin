@@ -1,0 +1,11 @@
+{
+    "name": "AppUsuario",
+    "alias": "appusuario",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\AppUsuario\\Providers\\AppUsuarioServiceProvider"
+    ],
+    "files": []
+}

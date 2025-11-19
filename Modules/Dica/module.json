@@ -1,0 +1,11 @@
+{
+    "name": "Dica",
+    "alias": "dica",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Dica\\Providers\\DicaServiceProvider"
+    ],
+    "files": []
+}

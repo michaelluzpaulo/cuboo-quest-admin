@@ -1,0 +1,23 @@
+{
+    "name": "code/option",
+    "description": "",
+    "authors": [
+        {
+            "name": "Michael Luz",
+            "email": "michaelluzpaulo@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Option\\": ""
+        }
+    }
+}

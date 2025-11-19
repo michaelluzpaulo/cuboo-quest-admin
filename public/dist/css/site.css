@@ -1,0 +1,143 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --white: #fff;
+  --gray-400: #c4c4c4;
+  --gray-500: #4f4f4f;
+  --blue: #235fa4;
+}
+
+html {
+  font-size: 62.5%;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  font-size: 1.6rem;
+  color: var(--gray-500);
+  background-color: var(--white);
+}
+.fs-700 {
+  font-style: normal;
+  font-weight: 700;
+}
+
+ul,
+ol {
+  padding-left: 5px;
+}
+
+img {
+  max-width: 100%;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:link {
+  text-decoration: none;
+}
+p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+h2 {
+  font-weight: 700;
+}
+
+.desktop {
+  display: block;
+}
+.mobile {
+  display: none;
+}
+header {
+  background-color: var(--gray-400);
+  height: 13.8rem;
+}
+header h1 {
+  font-size: 3.3rem;
+  color: var(--white);
+  font-weight: 700;
+  margin-top: 4rem;
+}
+header .logo {
+  height: 180px;
+  width: 100%;
+  max-width: 350px;
+  background: var(--white);
+  margin-top: 2.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+.content {
+  margin-top: 9.375rem;
+  margin-bottom: 4.375rem;
+}
+.accordion-item {
+  margin-bottom: 18px;
+}
+.accordion-button {
+  background-color: var(--white);
+  color: var(--gray-500);
+  font-weight: 700;
+  border: 1px solid var(--gray-400);
+}
+
+.accordion_title {
+  font-size: 16px;
+}
+.accordion-button:not(.collapsed) {
+  color: var(--gray-500);
+  background-color: var(--white);
+  padding: 1.6rem;
+}
+.accordion-button:not(.collapsed)::after {
+  display: none;
+}
+.accordion-button::after {
+  background-image: none;
+}
+#btn-interacao {
+  font-size: 16px;
+}
+.form_nova_interacao textarea {
+  padding: 5px;
+}
+
+footer {
+  background-color: var(--gray-400);
+  padding: 1.8rem 0;
+  width: 100%;
+}
+footer p {
+  text-align: center;
+  color: var(--white);
+}
+@media (max-width: 768px) {
+  header {
+    height: 22.8rem;
+  }
+  header .logo {
+    height: 100px;
+    width: 200px;
+    margin: auto;
+    margin-top: 10px;
+  }
+  header h1 {
+    text-align: center;
+  }
+  .content {
+    margin: 4.375rem 0;
+  }
+}

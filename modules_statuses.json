@@ -1,0 +1,15 @@
+{
+    "Site": true,
+    "Admin": true,
+    "Usuario": true,
+    "Tema": true,
+    "Sala": true,
+    "Dica": true,
+    "Institucional": true,
+    "Api": true,
+    "AppUsuario": true,
+    "Game": true,
+    "AppUsurio": true,
+    "Scenario": true,
+    "Option": true
+}

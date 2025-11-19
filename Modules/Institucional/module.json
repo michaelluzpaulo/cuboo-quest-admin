@@ -1,0 +1,11 @@
+{
+    "name": "Institucional",
+    "alias": "institucional",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Institucional\\Providers\\InstitucionalServiceProvider"
+    ],
+    "files": []
+}

@@ -1,0 +1,11 @@
+{
+    "name": "Scenario",
+    "alias": "scenario",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Scenario\\Providers\\ScenarioServiceProvider"
+    ],
+    "files": []
+}
