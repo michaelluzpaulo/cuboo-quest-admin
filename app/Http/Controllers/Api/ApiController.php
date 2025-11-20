@@ -299,64 +299,110 @@ class ApiController extends Controller
       }
    }
 
-   public function graphForGame($gameId)
-   {
-      try {
-         // Pegar todos os cenários relevantes para o jogo (ajuste se necessário)
-         // Aqui assumo que os cenários vinculados ao jogo são aqueles que aparecem nas options ou via game.scenario_id inicial
-         $scenarios = DB::table('scenarios')->get(); // ou filtrar por game, se pertinente
 
-         // Buscando contagens por option (filtrando apenas respostas do game)
-         $rows = DB::table('scenarios as s')
+  public function graphForGame($gameId)
+{
+    try {
+        // 1. Buscar game e cenário inicial
+        $game = DB::table('games')->where('id', $gameId)->first();
+
+        if (!$game) {
+            return response()->json(['error' => 1, 'message' => 'Game não encontrado'], 404);
+        }
+
+        $startScenarioId = $game->scenario_id;
+
+        if (!$startScenarioId) {
+            return response()->json([
+                'error' => 0,
+                'game_id' => $gameId,
+                'graph' => []
+            ]);
+        }
+
+        // 2. Caminhar pelos cenários a partir do inicial
+        $toVisit = [$startScenarioId];
+        $visited = [];
+        $scenarioIds = [];
+
+        while (!empty($toVisit)) {
+            $current = array_shift($toVisit);
+
+            if (isset($visited[$current])) continue;
+
+            $visited[$current] = true;
+            $scenarioIds[] = $current;
+
+            // Buscar opções desse cenário
+            $nextOptions = DB::table('options')
+                ->where('scenario_id', $current)
+                ->pluck('next_scenario_id')
+                ->filter()
+                ->toArray();
+
+            foreach ($nextOptions as $next) {
+                if (!isset($visited[$next])) {
+                    $toVisit[] = $next;
+                }
+            }
+        }
+
+        // 3. Buscar dados dos cenários e respostas
+        $rows = DB::table('scenarios as s')
             ->leftJoin('options as o', 'o.scenario_id', '=', 's.id')
             ->leftJoin('game_scenario_answers as gsa', 'gsa.options_id', '=', 'o.id')
             ->leftJoin('game_app_usuario as gau', function ($join) use ($gameId) {
-               $join->on('gau.id', '=', 'gsa.game_app_usuario_id')
-                  ->where('gau.game_id', '=', $gameId);
+                $join->on('gau.id', '=', 'gsa.game_app_usuario_id')
+                     ->where('gau.game_id', '=', $gameId);
             })
+            ->whereIn('s.id', $scenarioIds)
             ->select(
-               's.id as scenario_id',
-               's.title as scenario_title',
-               'o.id as option_id',
-               'o.description as option_description',
-               'o.next_scenario_id',
-               DB::raw('COUNT(*) as responses_count') //  <-- AQUI ESTÁ A CORREÇÃO
+                's.id as scenario_id',
+                's.title as scenario_title',
+                'o.id as option_id',
+                'o.description as option_description',
+                'o.next_scenario_id',
+                DB::raw('COUNT(*) as responses_count')
             )
             ->groupBy('s.id', 'o.id', 'o.next_scenario_id', 's.title', 'o.description')
             ->orderBy('s.id')
             ->get();
-         // Montar estrutura hierárquica
-         $graph = [];
-         foreach ($rows as $r) {
+
+        // 4. Montar estrutura final
+        $graph = [];
+        foreach ($rows as $r) {
             $sid = $r->scenario_id;
+
             if (!isset($graph[$sid])) {
-               $graph[$sid] = [
-                  'id' => $sid,
-                  'title' => $r->scenario_title,
-                  'options' => []
-               ];
+                $graph[$sid] = [
+                    'id'   => $sid,
+                    'title' => $r->scenario_title,
+                    'options' => []
+                ];
             }
-            // Se option_id for null (cenário sem opções) pule
+
             if ($r->option_id !== null) {
-               $graph[$sid]['options'][] = [
-                  'id' => $r->option_id,
-                  'text' => $r->option_description,
-                  'next_scenario_id' => $r->next_scenario_id,
-                  'count' => (int)$r->responses_count
-               ];
+                $graph[$sid]['options'][] = [
+                    'id' => $r->option_id,
+                    'text' => $r->option_description,
+                    'next_scenario_id' => $r->next_scenario_id,
+                    'count' => (int)$r->responses_count
+                ];
             }
-         }
+        }
 
-         // Retornar como array de nós
-         $graph = array_values($graph);
-
-         return response()->json([
+        return response()->json([
             'error' => 0,
             'game_id' => $gameId,
-            'graph' => $graph
-         ], 200);
-      } catch (\Exception $e) {
-         return response()->json(['error' => 1, 'message' => $e->getMessage()], 500);
-      }
-   }
+            'graph' => array_values($graph)
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 1,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
+
 }
