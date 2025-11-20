@@ -33,6 +33,15 @@
                 </div>
             </div>
             <div class="col-md-2">
+    <div class="form-group">
+        <label for="active_ranking" class="control-label">Final com Ranking: </label>
+        <select class="form-control" name="active_ranking" id="active_ranking" disabled>
+            <option value="S" <?php echo $game->active_ranking == 'S' ? 'selected' : ''; ?>>Sim</option>
+            <option value="N" <?php echo $game->active_ranking == 'N' ? 'selected' : ''; ?>>Não</option>
+        </select>
+    </div>
+</div>
+            <div class="col-md-2">
                 <div class="form-group">
                     <label for="ativox" class="control-label">Status: </label>
                     <input type="text" class="form-control" name="ativox" id="ativox" value="<?php echo $game->ativo == 'S' ? 'Ativado' : 'Inativado'; ?>"

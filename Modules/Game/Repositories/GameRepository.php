@@ -13,7 +13,7 @@ use Modules\Admin\Repositories\RepositoryInterface;
 class GameRepository extends AbstractRepository implements RepositoryInterface
 {
    protected $table = "game";
-   protected $fillable = ['nome', 'ativo', 'game_time', 'game_time_final', 'created_at', 'updated_at', 'users_id', 'idioma', 'date_expiracao', 'tema_id', 'status', 'final_game_at', 'scenario_id'];
+   protected $fillable = ['nome', 'ativo', 'game_time', 'game_time_final', 'created_at', 'updated_at', 'users_id', 'idioma', 'date_expiracao', 'tema_id', 'status', 'final_game_at', 'scenario_id', 'active_ranking'];
    //protected $guarded = ['id'];
    public $timestamps = true;
 
@@ -125,11 +125,11 @@ class GameRepository extends AbstractRepository implements RepositoryInterface
       $data = [];
 
       $url = env('APP_ENV') == 'local' ? "http://localhost:3000" : "https://";
-      $urlGM = env('APP_ENV') == 'local' ? "http://localhost:8000" : "https://rpg-admin.cuboogame.com";
+      $urlGM = env('APP_ENV') == 'local' ? "http://localhost:8000" : "https://quest-admin.cuboogame.com";
       $d1 = new \DateTime(date('Y-m-d H:i:s'));
 
       foreach ($result as $row) {
-         $url2 = env('APP_ENV') == 'local' ? "http://localhost:3000" : "https://rpg.cuboogame.com";
+         $url2 = env('APP_ENV') == 'local' ? "http://localhost:3000" : "https://quest.cuboogame.com";
          $chave = sha1($row->id);
 
          $d2 = new \DateTime($row->date_expiracao . ' 23:59:59');

@@ -36,6 +36,15 @@
             </div>
             <div class="col-md-3">
                 <div class="form-group">
+                    <label for="active_ranking" class="control-label">Final com Ranking: </label>
+                    <select class="form-control" name="active_ranking" id="active_ranking">
+                        <option value="S" selected="selected">Sim</option>
+                        <option value="N">Não</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
                     <label for="date_expiracao" class="control-label">Data de expiração: </label>
                     <input type="text" data-mask-type='datepicker' class="form-control" name="date_expiracao"
                         id="date_expiracao" value="{{ $date_expiracao }}">

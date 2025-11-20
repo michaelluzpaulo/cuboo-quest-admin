@@ -51,8 +51,8 @@
             </div>
             <div class="col-lg-3">
                 <div class="form-group">
-                    <label for="select_option_cor" class="control-label">Cor da Borda nas opções: </label>
-                    <input type="color" class="form-control" name="select_option_cor" id="select_option_cor" />
+                    <label for="select_board_cor" class="control-label">Cor da Borda nas opções: </label>
+                    <input type="color" class="form-control" name="select_board_cor" id="select_board_cor" />
                 </div>
             </div>
             <div class="col-md-12">
@@ -97,3 +97,4 @@
         <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Salvar</button>
     </div>
 </form>
+<?php /**PATH D:\work\www\bkp_2024\cuboo_group\quest_group\cuboo-quest-admin\Modules/Tema\Resources/views/create.blade.php ENDPATH**/ ?>

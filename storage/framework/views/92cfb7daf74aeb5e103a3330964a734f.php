@@ -27,9 +27,9 @@
 
                     <div class="col-md-8">
                          <div class="form-group">
-                         <label for="root_scenario_id" class="control-label">Raiz:</label>
+                         <label for="root_scenario_id" class="control-label">Raiz do Cenário:</label>
                        <select name="root_scenario_id" class="form-control">
-                          <option value="">Selecione</option>
+                          <option value="">Raiz</option>
                                <?php $__currentLoopData = $rootScenarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $root): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                           <option value="<?php echo e($root->id); ?>" <?php echo e($scenario->root_scenario_id == $root->id ? 'selected' : ''); ?>>
                              <?php echo e($root->title); ?>

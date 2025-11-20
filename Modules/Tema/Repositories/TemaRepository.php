@@ -17,7 +17,7 @@ class TemaRepository extends AbstractRepository implements RepositoryInterface
     * @var string
     */
    protected $table = "tema";
-   protected $fillable = ["idioma", "titulo", "texto_erro_geral", "texto_msg_final", "logo_img", "marca_img", "fundo_img", "fundo_cor", "cor_fonte", "bg_btn_cor"];
+   protected $fillable = ["idioma", "titulo", "texto_erro_geral", "texto_msg_final", "logo_img", "marca_img", "fundo_img", "fundo_cor", "cor_fonte", "bg_btn_cor", "text_ranking", "select_option_cor"];
    //protected $guarded = ['id'];
    public $timestamps = false;
 

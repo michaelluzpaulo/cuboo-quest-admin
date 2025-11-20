@@ -58,6 +58,13 @@
                         value="<?php echo $tema->text_btn_cor; ?>" />
                 </div>
             </div>
+            <div class="col-lg-3">
+                <div class="form-group">
+                    <label for="select_option_cor" class="control-label">Cor da Borda nas opções: </label>
+                    <input type="color" class="form-control" name="select_option_cor" id="select_option_cor"
+                        value="<?php echo $tema->select_option_cor; ?>" />
+                </div>
+            </div>
 
 
             <div class="col-lg-6">
@@ -69,6 +76,15 @@
             </div>
 
 
+            <div class="col-lg-12">
+                <hr />
+            </div>
+               <div class="col-md-12">
+                    <div class="form-group">
+                    <label for="text_ranking" class="control-label">Texto para Ranking: </label>
+                    <textarea class="form-control ckeditor" name="text_ranking" id="text_ranking" rows="8"><?php echo $tema->text_ranking; ?></textarea>
+                     </div>
+              </div>
             <div class="col-lg-12">
                 <hr />
             </div>
