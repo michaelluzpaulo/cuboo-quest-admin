@@ -269,7 +269,6 @@ class ApiController extends Controller
       }
    }
 
-
    public function storeAnswer(Request $request, $gameId)
    {
       try {
@@ -298,65 +297,96 @@ class ApiController extends Controller
          ], 400);
       }
    }
+   private function recursiveScenarios($scenariosCache, $id, &$scenarios, $level = 0)
+   {
+      // Buscar o cenário atual dentro do cache
+      $sc = $scenariosCache[$id] ?? null;
 
-   public function graphForGame($gameId)
+      if (!$sc) {
+         return; // fim da recursão
+      }
+
+      // Buscar opções do cenário
+      $options = DB::table('options')
+         ->where('scenario_id', $id)
+         ->get();
+
+      // Adicionar opções
+      $sc->options = $options;
+
+      // Adicionar nível
+      $sc->level = $level;
+
+      // Adicionar ao array final
+      $scenarios[] = $sc;
+
+      // Recursão para cada opção que tenha next_scenario_id
+      foreach ($options as $op) {
+         if (!empty($op->next_scenario_id)) {
+            $this->recursiveScenarios(
+               $scenariosCache,
+               $op->next_scenario_id,
+               $scenarios,
+               $level + 1 // incrementa nível
+            );
+         }
+      }
+   }
+
+
+   public function master($id)
    {
       try {
-
-
-         $scenarios = DB::table('scenarios')->get(); // ou filtrar por game, se pertinente
-
-         // Buscando contagens por option (filtrando apenas respostas do game)
-         $rows = DB::table('scenarios as s')
-            ->leftJoin('options as o', 'o.scenario_id', '=', 's.id')
-            ->leftJoin('game_scenario_answers as gsa', 'gsa.options_id', '=', 'o.id')
-            ->leftJoin('game_app_usuario as gau', function ($join) use ($gameId) {
-               $join->on('gau.id', '=', 'gsa.game_app_usuario_id')
-                  ->where('gau.game_id', '=', $gameId);
-            })
-            ->select(
-               's.id as scenario_id',
-               's.title as scenario_title',
-               'o.id as option_id',
-               'o.description as option_description',
-               'o.next_scenario_id',
-               DB::raw('COUNT(*) as responses_count') //  <-- AQUI ESTÁ A CORREÇÃO
-            )
-            ->groupBy('s.id', 'o.id', 'o.next_scenario_id', 's.title', 'o.description')
-            ->orderBy('s.id')
+         $game = DB::table('game')->where('id', $id)->first();
+         $scenariosBF = DB::table('scenarios')
+            ->whereRaw("(id=? || root_scenario_id=?)", [$game->scenario_id, $game->scenario_id])
+            ->orderBy('root_scenario_id')
             ->get();
-         // Montar estrutura hierárquica
-         $graph = [];
-         foreach ($rows as $r) {
-            $sid = $r->scenario_id;
-            if (!isset($graph[$sid])) {
-               $graph[$sid] = [
-                  'id' => $sid,
-                  'title' => $r->scenario_title,
-                  'options' => []
-               ];
-            }
-            // Se option_id for null (cenário sem opções) pule
-            if ($r->option_id !== null) {
-               $graph[$sid]['options'][] = [
-                  'id' => $r->option_id,
-                  'text' => $r->option_description,
-                  'next_scenario_id' => $r->next_scenario_id,
-                  'count' => (int)$r->responses_count
-               ];
-            }
+
+         $scenariosCache = [];
+         foreach ($scenariosBF as $sc) {
+            $scenariosCache[$sc->id] = $sc;
          }
 
-         // Retornar como array de nós
-         $graph = array_values($graph);
+
+         $scenarios = [];
+         // Chamando a recursão (agora correto)
+         $this->recursiveScenarios($scenariosCache, $game->scenario_id, $scenarios, 0);
 
          return response()->json([
             'error' => 0,
-            'game_id' => $gameId,
-            'graph' => $graph
-         ], 200);
-      } catch (\Exception $e) {
-         return response()->json(['error' => 1, 'message' => $e->getMessage()], 500);
+            'scenarios' => $scenarios
+         ]);
+      } catch (Exception $e) {
+         return response()->json([
+            'error' => 1,
+            'message' => $e->getMessage()
+         ], 400);
       }
    }
+
+
+
+
+
+
+   // public function master($id)
+   // {
+   //    try {
+
+   //       $game = DB::table('game')->where('id', $id)->first();
+   //       $scenarios = DB::table('scenarios')->where('id', $game->scenario_id)->first();
+
+
+   //       return response()->json([
+   //          'error' => 0,
+   //          'scenarios' => $scenarios
+   //       ], 200);
+   //    } catch (Exception $e) {
+   //       return response()->json([
+   //          'error' => 1,
+   //          'message' => $e->getMessage()
+   //       ], 400);
+   //    }
+   // }
 }

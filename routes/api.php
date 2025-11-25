@@ -26,7 +26,6 @@ Route::controller(AuthController::class)->group(function () {
 
 Route::controller(ApiController::class)->group(function () {
    Route::get('/tema/{code}', 'tema');
-   // Route::post('/think', 'think');
    Route::put('/game-update', 'gameUpdate');
    Route::get('/game-sala/{id}', 'getGameSala');
    Route::get('/game/{id}', 'getGame');
@@ -41,5 +40,5 @@ Route::controller(ApiController::class)->group(function () {
    Route::get('/game/{id}/player-status', 'getPlayerStatus');
    Route::get('/game/{id}/ranking', 'ranking');
    Route::post('/game/{gameId}/answer', 'storeAnswer');
-   Route::get('/game/{gameId}/graph', 'graphForGame');
+   Route::get('/game/{gameId}/master', 'master');
 });
