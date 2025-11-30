@@ -60,47 +60,72 @@
             </div>
             <div class="col-md-12">
                 <h4><b>Players</b></h4>
-                <div style="overflow-x: auto">
+                <div style="overflow-x: auto; width: 100%; ">
                     <table class="table table-striped table-bordered">
                         <thead>
-                            <tr>
-                                <th>
-                                    Nome
-                                </th>
-                                <th>
-                                    Email
-                                </th>
-                                <th>
-                                    Total Pontos
-                                </th>
-                                <th>
-                                    Total Tempo
-                                </th>
+                           <tr>
+            <th>Nome</th>
+            <th>Email</th>
+             <th>Pontos</th>
+            <th>Tempo</th>
 
-                            </tr>
+          <?php $__currentLoopData = $listaCenarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+        <th>
+            <?php echo e($item->scenario->title); ?>
+
+            <?php if($item->scenario->is_finally === 'S'): ?>
+                (Final)
+            <?php endif; ?>
+        </th>
+    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
+
+        </tr>
                         </thead>
                         <tbody>
-                            <?php $__currentLoopData = $gameUsuarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $g): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <tr>
-                                    <td>
-                                        <?php echo e($g->nome); ?>
+<?php $__currentLoopData = $gameUsuarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $u): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+    <?php
+        $respUser = $respostas[$u->id] ?? collect();
+        $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
+    ?>
 
-                                    </td>
-                                    <td>
-                                        <?php echo e($g->email); ?>
+    <tr>
+        <td><?php echo e($u->nome); ?></td>
+        <td><?php echo e($u->email); ?></td>
+        <td><?php echo e($u->total_points); ?></td>
+        <td><?php echo e($u->total_tempo); ?></td>
 
-                                    </td>
-                                    <td>
-                                        <?php echo e($g->total_points); ?>
+       <?php $__currentLoopData = $listaCenarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+    <?php
+        $cenario = $item->scenario;
+        $idCenario = $cenario->id;
+        $isFinal = $cenario->is_finally === 'S';
 
-                                    </td>
-                                    <td>
-                                        <?php echo e($g->total_tempo); ?>
+        $resp = $respUser->firstWhere('scenarios_id', $idCenario);
+        $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
+    ?>
 
-                                    </td>
-                                </tr>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                        </tbody>
+    <td class="text-center">
+
+        
+        <?php if(!$isFinal): ?>
+            <?php if($resp): ?>
+                <span style="color: green; font-weight: bold;">✔</span>
+            <?php endif; ?>
+
+        
+        <?php else: ?>
+            <?php if($idCenario == $finalDoJogador): ?>
+    <span class="x-mark" style="color:red;font-weight:bold;">✔ FINAL</span>
+<?php endif; ?>
+        <?php endif; ?>
+
+    </td>
+<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+    </tr>
+
+<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+</tbody>
                     </table>
                 </div>
             </div>

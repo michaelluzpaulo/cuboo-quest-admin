@@ -83,43 +83,71 @@
             </div>
             <div class="col-md-12">
                 <h4><b>Players</b></h4>
-                <div style="overflow-x: auto">
+                <div style="overflow-x: auto; width: 100%; ">
                     <table class="table table-striped table-bordered">
                         <thead>
-                            <tr>
-                                <th>
-                                    Nome
-                                </th>
-                                <th>
-                                    Email
-                                </th>
-                                <th>
-                                    Total Pontos
-                                </th>
-                                <th>
-                                    Total Tempo
-                                </th>
+                           <tr>
+            <th>Nome</th>
+            <th>Email</th>
+             <th>Pontos</th>
+            <th>Tempo</th>
 
-                            </tr>
+          @foreach($listaCenarios as $item)
+        <th>
+            {{ $item->scenario->title }}
+            @if($item->scenario->is_finally === 'S')
+                (Final)
+            @endif
+        </th>
+    @endforeach
+
+
+        </tr>
                         </thead>
                         <tbody>
-                            @foreach ($gameUsuarios as $g)
-                                <tr>
-                                    <td>
-                                        {{ $g->nome }}
-                                    </td>
-                                    <td>
-                                        {{ $g->email }}
-                                    </td>
-                                    <td>
-                                        {{ $g->total_points }}
-                                    </td>
-                                    <td>
-                                        {{ $g->total_tempo }}
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
+@foreach($gameUsuarios as $u)
+    @php
+        $respUser = $respostas[$u->id] ?? collect();
+        $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
+    @endphp
+
+    <tr>
+        <td>{{ $u->nome }}</td>
+        <td>{{ $u->email }}</td>
+        <td>{{ $u->total_points }}</td>
+        <td>{{ $u->total_tempo }}</td>
+
+       @foreach($listaCenarios as $item)
+    @php
+        $cenario = $item->scenario;
+        $idCenario = $cenario->id;
+        $isFinal = $cenario->is_finally === 'S';
+
+        $resp = $respUser->firstWhere('scenarios_id', $idCenario);
+        $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
+    @endphp
+
+    <td class="text-center">
+
+        {{-- PERGUNTA NORMAL --}}
+        @if(!$isFinal)
+            @if($resp)
+                <span style="color: green; font-weight: bold;">✔</span>
+            @endif
+
+        {{-- FINAL --}}
+        @else
+            @if($idCenario == $finalDoJogador)
+    <span class="x-mark" style="color:red;font-weight:bold;">✔ FINAL</span>
+@endif
+        @endif
+
+    </td>
+@endforeach
+    </tr>
+
+@endforeach
+</tbody>
                     </table>
                 </div>
             </div>

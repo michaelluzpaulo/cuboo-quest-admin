@@ -104,28 +104,206 @@ class GameService
 
    public function gm($chave)
    {
-      $game = DB::table('game')
+      // 1. Buscar o game pela hash
+      $gameRow = DB::table('game')
          ->whereRaw("sha1(id) = '{$chave}'")
          ->first();
 
-      $game = $this->repository->find($game->id);
+      $game = $this->repository->find($gameRow->id);
+
+      // 2. Jogadores do game
       $gameUsuarios = DB::table('game_app_usuario AS GS')
-         ->selectRaw("P.nome, P.email, GS.status,GS.total_points,
-         SEC_TO_TIME(TIMESTAMPDIFF(SECOND, GS.created_at, GS.finished_at)) AS total_tempo")
+         ->selectRaw("
+            GS.id,
+            P.nome,
+            P.email,
+            GS.status,
+            GS.total_points,
+            SEC_TO_TIME(TIMESTAMPDIFF(SECOND, GS.created_at, GS.finished_at)) AS total_tempo
+        ")
          ->leftJoin('app_usuario AS P', 'GS.app_usuario_id', '=', 'P.id')
-         ->where("GS.game_id", '=', $game->id)
+         ->where("GS.game_id", $game->id)
          ->orderBy('P.nome')
          ->get();
 
-      $tema = DB::table('tema')->where('id', '=', $game->tema_id)->first();
+      // 3. Carregar TODOS os cenários ligados ao game (ordenados por id)
+      $scenarioRoot = $game->scenario_id;
 
+      $scenariosBF = DB::table('scenarios')
+         ->whereRaw("(id = ? OR root_scenario_id = ?)", [$scenarioRoot, $scenarioRoot])
+         ->orderBy('id')
+         ->get();
 
+      // indexar por id para lookup rápido
+      $scenariosById = $scenariosBF->keyBy('id');
 
+      // 4. Buscar todas as opções relacionadas (para lookup por id e por scenario)
+      $optionsBF = DB::table('options')
+         ->whereIn('scenario_id', $scenariosBF->pluck('id'))
+         ->get();
 
-      $estatistica = view('game::gm', ['gameUsuarios' => $gameUsuarios, 'game' => $game, 'tema' => $tema,]);
+      $optionsById = $optionsBF->keyBy('id');
+      $optionsByScenario = [];
+      foreach ($optionsBF as $op) {
+         $optionsByScenario[$op->scenario_id][] = $op;
+      }
 
-      return view('admin::layouts/master_gm', ['estatistica' =>  $estatistica]);
+      // 5. Separar perguntas e finais (manter order by id: perguntas primeiro, depois finais)
+      $perguntas = $scenariosBF->filter(function ($s) {
+         return ($s->is_finally ?? '') !== 'S';
+      });
+      $finais    = $scenariosBF->filter(function ($s) {
+         return ($s->is_finally ?? '') === 'S';
+      });
+
+      // 6. Criar lista final: PERGUNTAS → FINAIS
+      $listaCenarios = collect();
+      foreach ($perguntas as $p) {
+         $listaCenarios->push((object)[
+            'scenario' => $p,
+            'options'  => collect($optionsByScenario[$p->id] ?? [])
+         ]);
+      }
+      foreach ($finais as $p) {
+         $listaCenarios->push((object)[
+            'scenario' => $p,
+            'options'  => collect($optionsByScenario[$p->id] ?? [])
+         ]);
+      }
+
+      // 7. Respostas dos jogadores (agrupadas)
+      $gameUsuarioIds = $gameUsuarios->pluck('id')->toArray();
+      $respostas = DB::table('game_scenario_answers')
+         ->whereIn('game_app_usuario_id', $gameUsuarioIds)
+         ->get()
+         ->groupBy('game_app_usuario_id');
+
+      // para facilitar lookup das respostas de um jogador por scenario
+      // (é uma colecao de colecoes)
+      $respostasByUserByScenario = [];
+      foreach ($respostas as $userId => $rows) {
+         $respostasByUserByScenario[$userId] = $rows->groupBy('scenarios_id');
+      }
+
+      // 8. Determinar o FINAL de cada jogador (tentando cobrir todos os casos)
+      $finaisPorJogador = [];
+
+      foreach ($gameUsuarios as $u) {
+         $userId = $u->id;
+         $respUser = $respostas[$userId] ?? collect();
+
+         // 8.1 — Se ele respondeu diretamente um cenário que é final, use ele
+         $idsRespondidos = $respUser->pluck('scenarios_id')->unique()->values()->all();
+
+         $finalDirect = null;
+         if (!empty($idsRespondidos)) {
+            $finalDirect = DB::table('scenarios')
+               ->whereIn('id', $idsRespondidos)
+               ->where('is_finally', 'S')
+               ->first();
+         }
+         if ($finalDirect) {
+            $finaisPorJogador[$userId] = $finalDirect->id;
+            continue;
+         }
+
+         // 8.2 — Caso contrário, tentar inferir seguindo as opções escolhidas
+         // percorre cada resposta do jogador (cada opção escolhida) e segue next_scenario_id
+         $inferredFinal = null;
+
+         foreach ($respUser as $answerRow) {
+            // cada $answerRow pode ter várias entradas por mesmo scenario, mas vamos usar option_id
+            $optionId = $answerRow->options_id ?? null;
+            if (!$optionId) continue;
+
+            // seguir a cadeia a partir desta option
+            $visitedScenarios = [];
+            $currentNext = $optionsById[$optionId]->next_scenario_id ?? null;
+
+            while ($currentNext) {
+               // evitar loop infinito
+               if (in_array($currentNext, $visitedScenarios)) break;
+               $visitedScenarios[] = $currentNext;
+
+               // se esse cenário é final, encontramos o final
+               if (isset($scenariosById[$currentNext]) && ($scenariosById[$currentNext]->is_finally ?? '') === 'S') {
+                  $inferredFinal = $currentNext;
+                  break 2; // fim do foreach principal: já achou o final
+               }
+
+               // se o jogador respondeu esse próximo cenário, pegue a opção escolhida por ele e continue
+               $respForNextScenario = $respostasByUserByScenario[$userId][$currentNext] ?? null;
+               if ($respForNextScenario && $respForNextScenario->count() > 0) {
+                  // se houver respostas para esse scenario, pegar a primeira opção selecionada e seguir
+                  $nextOptionId = $respForNextScenario->first()->options_id ?? null;
+                  if ($nextOptionId && isset($optionsById[$nextOptionId])) {
+                     $currentNext = $optionsById[$nextOptionId]->next_scenario_id ?? null;
+                     continue;
+                  } else {
+                     // não há next definido, encerra essa cadeia
+                     break;
+                  }
+               } else {
+                  // jogador não respondeu o next scenario: tentamos checar se esse next scenario em si é final (já feito)
+                  // se não for final e o jogador não respondeu, não há como inferir mais — encerra
+                  break;
+               }
+            } // end while
+         } // end foreach respostas do jogador
+
+         $finaisPorJogador[$userId] = $inferredFinal ?: null;
+      }
+
+      // 9. Tema
+      $tema = DB::table('tema')->where('id', $game->tema_id)->first();
+
+      // 10. Enviar para view
+      return view('admin::layouts/master_gm', [
+         'estatistica' => view('game::gm', [
+            'gameUsuarios'     => $gameUsuarios,
+            'game'             => $game,
+            'tema'             => $tema,
+            'listaCenarios'    => $listaCenarios,
+            'respostas'        => $respostas,
+            'finaisPorJogador' => $finaisPorJogador
+         ])
+      ]);
    }
+
+
+
+
+
+
+
+
+
+
+
+   // public function gm($chave)
+   // {
+   //    $game = DB::table('game')
+   //       ->whereRaw("sha1(id) = '{$chave}'")
+   //       ->first();
+
+   //    $game = $this->repository->find($game->id);
+   //    $gameUsuarios = DB::table('game_app_usuario AS GS')
+   //       ->selectRaw("P.nome, P.email, GS.status,GS.total_points,
+   //       SEC_TO_TIME(TIMESTAMPDIFF(SECOND, GS.created_at, GS.finished_at)) AS total_tempo")
+   //       ->leftJoin('app_usuario AS P', 'GS.app_usuario_id', '=', 'P.id')
+   //       ->where("GS.game_id", '=', $game->id)
+   //       ->orderBy('P.nome')
+   //       ->get();
+
+   //    $tema = DB::table('tema')->where('id', '=', $game->tema_id)->first();
+
+
+
+
+   //    $estatistica = view('game::gm', ['gameUsuarios' => $gameUsuarios, 'game' => $game, 'tema' => $tema,]);
+
+   //    return view('admin::layouts/master_gm', ['estatistica' =>  $estatistica]);
+   // }
 
    // Força a finalização da partida.
    public function finalizaPartida($id)
