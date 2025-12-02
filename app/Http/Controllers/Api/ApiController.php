@@ -282,7 +282,7 @@ class ApiController extends Controller
          DB::table('game_scenario_answers')->insert([
             'scenarios_id' => $request->scenario_id,
             // 'options_id' => $request->option_id,
-            'options_id' => !empty($request->option_id) ? (int)$request->option_id : null,
+            'options_id' => $request->option_id ?? null,
             'game_app_usuario_id' => $gameUser->id,
             'points' => $request->points ?? 0,
          ]);
