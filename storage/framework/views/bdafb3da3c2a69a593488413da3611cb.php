@@ -35,7 +35,6 @@
                         value="<?php echo __date_mysql_to_iso($game->date_expiracao); ?>" disabled>
                 </div>
             </div>
-            
             <div class="col-md-2">
                 <div class="form-group">
                     <label for="game_time2" class="control-label">Game Inicio: </label>
@@ -51,10 +50,6 @@
                 </div>
             </div>
 
-
-            
-
-
             <div class="col-md-12">
                 <hr />
             </div>
@@ -64,68 +59,65 @@
                     <table class="table table-striped table-bordered">
                         <thead>
                            <tr>
-            <th>Nome</th>
-            <th>Email</th>
-             <th>Pontos</th>
-            <th>Tempo</th>
+                                 <th>Nome</th>
+                                 <th>Email</th>
+                                  <th>Pontos</th>
+                                 <th>Tempo</th>
+                                 <?php $__currentLoopData = $listaCenarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                  <th>
+                                 <?php echo e($item->scenario->title); ?>
 
-          <?php $__currentLoopData = $listaCenarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-        <th>
-            <?php echo e($item->scenario->title); ?>
-
-            <?php if($item->scenario->is_finally === 'S'): ?>
-                (Final)
-            <?php endif; ?>
-        </th>
-    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-
-
-        </tr>
+                                 <?php if($item->scenario->is_finally === 'S'): ?>
+                                     (Final)
+                                 <?php endif; ?>
+                                 </th>
+                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                          </tr>
                         </thead>
-                        <tbody>
-<?php $__currentLoopData = $gameUsuarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $u): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-    <?php
-        $respUser = $respostas[$u->id] ?? collect();
-        $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
-    ?>
+                         <tbody>
+                          <?php $__currentLoopData = $gameUsuarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $u): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                             <?php
+                             $respUser = $respostas[$u->id] ?? collect();
+                             $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
+                             ?>
 
-    <tr>
-        <td><?php echo e($u->nome); ?></td>
-        <td><?php echo e($u->email); ?></td>
-        <td><?php echo e($u->total_points); ?></td>
-        <td><?php echo e($u->total_tempo); ?></td>
+                           <tr>
+                             <td><?php echo e($u->nome); ?></td>
+                             <td><?php echo e($u->email); ?></td>
+                             <td><?php echo e($u->total_points); ?></td>
+                             <td><?php echo e($u->total_tempo); ?></td>
 
-       <?php $__currentLoopData = $listaCenarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-    <?php
-        $cenario = $item->scenario;
-        $idCenario = $cenario->id;
-        $isFinal = $cenario->is_finally === 'S';
+                                <?php $__currentLoopData = $listaCenarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php
+                             $cenario = $item->scenario;
+                             $idCenario = $cenario->id;
+                             $isFinal = $cenario->is_finally === 'S';
 
-        $resp = $respUser->firstWhere('scenarios_id', $idCenario);
-        $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
-    ?>
+                             $resp = $respUser->firstWhere('scenarios_id', $idCenario);
+                             $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
+                             ?>
 
-    <td class="text-center">
+                              <td class="text-center">
 
-        
-        <?php if(!$isFinal): ?>
-            <?php if($resp): ?>
-                <span style="color: green; font-weight: bold;">✔</span>
-            <?php endif; ?>
+                                 
+                                 <?php if(!$isFinal): ?>
+                                 <?php if($resp): ?>
+                                     <span style="color: green; font-weight: bold;">✔</span>
+                                 <?php endif; ?>
 
-        
-        <?php else: ?>
-            <?php if($idCenario == $finalDoJogador): ?>
-    <span class="x-mark" style="color:red;font-weight:bold;">✔ FINAL</span>
+                                 
+                                 <?php else: ?>
+                                   <?php if($idCenario == $finalDoJogador): ?>
+    <span style="color:red;font-weight:bold;">✔ FINAL</span>
 <?php endif; ?>
-        <?php endif; ?>
+                                 <?php endif; ?>
 
-    </td>
-<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-    </tr>
+                             </td>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                          </tr>
 
-<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-</tbody>
+                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </tbody>
                     </table>
                 </div>
             </div>
