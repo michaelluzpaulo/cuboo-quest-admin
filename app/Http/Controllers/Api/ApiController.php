@@ -301,13 +301,13 @@ class ApiController extends Controller
 
    public function master($id)
    {
+      ini_set('memory_limit', '512M');
       try {
          $game = DB::table('game')->where('id', $id)->first();
 
-         // Buscar todos os IDs de game_app_usuario para esse game
          $gameUsuariosIds = DB::table('game_app_usuario')
             ->where('game_id', $game->id)
-            ->pluck('id'); // ex: [119, 120, 121]
+            ->pluck('id');
 
          $scenariosBF = DB::table('scenarios')
             ->whereRaw("(id=? OR root_scenario_id=?)", [$game->scenario_id, $game->scenario_id])
@@ -320,6 +320,7 @@ class ApiController extends Controller
          }
 
          $scenarios = [];
+
          $this->recursiveScenarios($scenariosCache, $game->scenario_id, $scenarios, $gameUsuariosIds);
 
          return response()->json([
@@ -334,9 +335,13 @@ class ApiController extends Controller
       }
    }
 
-
-   private function recursiveScenarios($scenariosCache, $id, &$scenarios, $gameUsuariosIds, $level = 0)
+   private function recursiveScenarios($scenariosCache, $id, &$scenarios, $gameUsuariosIds, $level = 0, &$addedIds = [])
    {
+      // Se já foi adicionado, não processa de novo
+      if (in_array($id, $addedIds)) {
+         return;
+      }
+
       $sc = $scenariosCache[$id] ?? null;
       if (!$sc) return;
 
@@ -364,6 +369,9 @@ class ApiController extends Controller
       $sc->level = $level;
       $scenarios[] = $sc;
 
+      // Marca como adicionado
+      $addedIds[] = $id;
+
       foreach ($options as $op) {
          if (!empty($op->next_scenario_id)) {
             $this->recursiveScenarios(
@@ -371,78 +379,10 @@ class ApiController extends Controller
                $op->next_scenario_id,
                $scenarios,
                $gameUsuariosIds,
-               $level + 1
+               $level + 1,
+               $addedIds
             );
          }
       }
    }
-
-
-
-   // private function recursiveScenarios($scenariosCache, $id, &$scenarios, $level = 0)
-   // {
-   //    // Buscar o cenário atual dentro do cache
-   //    $sc = $scenariosCache[$id] ?? null;
-
-   //    if (!$sc) {
-   //       return; // fim da recursão
-   //    }
-
-   //    // Buscar opções do cenário
-   //    $options = DB::table('options')
-   //       ->where('scenario_id', $id)
-   //       ->get();
-
-   //    // Adicionar opções
-   //    $sc->options = $options;
-
-   //    // Adicionar nível
-   //    $sc->level = $level;
-
-   //    // Adicionar ao array final
-   //    $scenarios[] = $sc;
-
-   //    // Recursão para cada opção que tenha next_scenario_id
-   //    foreach ($options as $op) {
-   //       if (!empty($op->next_scenario_id)) {
-   //          $this->recursiveScenarios(
-   //             $scenariosCache,
-   //             $op->next_scenario_id,
-   //             $scenarios,
-   //             $level + 1 // incrementa nível
-   //          );
-   //       }
-   //    }
-   // }
-
-   // public function master($id)
-   // {
-   //    try {
-   //       $game = DB::table('game')->where('id', $id)->first();
-   //       $scenariosBF = DB::table('scenarios')
-   //          ->whereRaw("(id=? || root_scenario_id=?)", [$game->scenario_id, $game->scenario_id])
-   //          ->orderBy('root_scenario_id')
-   //          ->get();
-
-   //       $scenariosCache = [];
-   //       foreach ($scenariosBF as $sc) {
-   //          $scenariosCache[$sc->id] = $sc;
-   //       }
-
-
-   //       $scenarios = [];
-   //       // Chamando a recursão (agora correto)
-   //       $this->recursiveScenarios($scenariosCache, $game->scenario_id, $scenarios, 0);
-
-   //       return response()->json([
-   //          'error' => 0,
-   //          'scenarios' => $scenarios
-   //       ]);
-   //    } catch (Exception $e) {
-   //       return response()->json([
-   //          'error' => 1,
-   //          'message' => $e->getMessage()
-   //       ], 400);
-   //    }
-   // }
 }
