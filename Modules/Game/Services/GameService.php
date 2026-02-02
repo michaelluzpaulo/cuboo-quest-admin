@@ -243,8 +243,6 @@ class GameService
 
 
 
-
-
    // public function gm($chave)
    // {
    //    $game = DB::table('game')
@@ -320,6 +318,9 @@ class GameService
                break;
             case 4:
                $sort = 'GM';
+               break;
+            case 5:
+               $sort = 'MESTRE';
                break;
          }
 

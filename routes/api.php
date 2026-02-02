@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ApiController;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Api\GameController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,5 +41,9 @@ Route::controller(ApiController::class)->group(function () {
    Route::get('/game/{id}/player-status', 'getPlayerStatus');
    Route::get('/game/{id}/ranking', 'ranking');
    Route::post('/game/{gameId}/answer', 'storeAnswer');
-   Route::get('/game/{gameId}/master', 'master');
+   // Route::get('/game/{gameId}/master', 'master');
+});
+
+Route::prefix('mestre')->group(function () {
+   Route::get('/{chave}', [ApiController::class, 'mestre']);
 });

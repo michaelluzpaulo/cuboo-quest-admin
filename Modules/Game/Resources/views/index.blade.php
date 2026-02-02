@@ -74,6 +74,7 @@
                            <th>Status</th>
                            <th>Game Link</th>
                            <th>GM</th>
+                           <th>Mestre</th>
                            <th class="text-center">Editar</th>
                         </tr>
                      </thead>

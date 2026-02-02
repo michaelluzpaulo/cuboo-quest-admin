@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('css'); ?>
 <?php $__env->stopSection(); ?>
 
@@ -74,6 +72,7 @@
                            <th>Status</th>
                            <th>Game Link</th>
                            <th>GM</th>
+                           <th>Mestre</th>
                            <th class="text-center">Editar</th>
                         </tr>
                      </thead>

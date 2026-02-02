@@ -14,7 +14,12 @@ class ApiController extends Controller
 {
    public function __construct()
    {
-      $this->middleware('auth:api', ['except' => ['login', 'register', 'tema']]);
+      $this->middleware('auth:api', ['except' => [
+         'login',
+         'register',
+         'tema',
+         'mestre',
+      ]]);
    }
 
    protected function getDecodeToken()
@@ -299,7 +304,7 @@ class ApiController extends Controller
       }
    }
 
-   public function master($id)
+   public function mestre($id)
    {
       ini_set('memory_limit', '512M');
       try {
