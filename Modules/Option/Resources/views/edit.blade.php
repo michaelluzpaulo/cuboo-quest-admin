@@ -20,7 +20,23 @@
                             <input type="number" class="form-control" name="points" id="points" value="<?php echo $option->points; ?>">
                         </div>
                     </div>
-                    <div class="col-md-10">
+                      <div class="col-md-4">
+                <div class="form-group">
+                    <label for="code" class="control-label">Código</label>
+                    <input type="text" class="form-control" name="code" id="code" value="<?php echo $option->code; ?>">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="is_message" id="is_message" value="1"
+                    <?php echo $option->is_message ? 'checked' : ''; ?>
+                    >
+                    <label class="form-check-label" for="is_message">
+                        Usuário pode escrever mensagem?
+                    </label>
+                </div>
+            </div>
+                    <div class="col-md-12">
                          <div class="form-group">
                          <label for="next_scenario_id" class="control-label">Próximo Cenário:</label>
                        <select name="next_scenario_id" class="form-control">

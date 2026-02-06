@@ -4,6 +4,8 @@ namespace Modules\Game\Services;
 
 use DateTime;
 use DateTimeZone;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
@@ -131,10 +133,8 @@ class GameService
       $scenarioRoot = $game->scenario_id;
       $scenariosBF = DB::table('scenarios')
          ->whereRaw("(id = ? OR root_scenario_id = ?)", [$scenarioRoot, $scenarioRoot])
-         ->orderBy('id')
          ->get();
 
-      // indexar por id para lookup rápido
       $scenariosById = $scenariosBF->keyBy('id');
 
       // 4. Buscar todas as opções relacionadas (para lookup por id e por scenario)
@@ -147,23 +147,22 @@ class GameService
       foreach ($optionsBF as $op) {
          $optionsByScenario[$op->scenario_id][] = $op;
       }
+      // 5. Separar perguntas e finais
+      $perguntas = $scenariosBF->where('is_finally', 0);
+      $finais    = $scenariosBF->where('is_finally', 1);
 
-      // 5. Separar perguntas e finais (manter order by id: perguntas primeiro, depois finais)
-      $perguntas = $scenariosBF->filter(function ($s) {
-         return ($s->is_finally ?? '') !== 'S';
-      });
-      $finais    = $scenariosBF->filter(function ($s) {
-         return ($s->is_finally ?? '') === 'S';
-      });
+      $perguntasOrdenadas = $perguntas->sortBy('id');
 
       // 6. Criar lista final: PERGUNTAS → FINAIS
       $listaCenarios = collect();
-      foreach ($perguntas as $p) {
+
+      foreach ($perguntasOrdenadas as $p) {
          $listaCenarios->push((object)[
             'scenario' => $p,
             'options'  => collect($optionsByScenario[$p->id] ?? [])
          ]);
       }
+
       foreach ($finais as $p) {
          $listaCenarios->push((object)[
             'scenario' => $p,
@@ -178,13 +177,12 @@ class GameService
          ->get()
          ->groupBy('game_app_usuario_id');
 
-      // para facilitar lookup das respostas de um jogador por scenario
       $respostasByUserByScenario = [];
       foreach ($respostas as $userId => $rows) {
          $respostasByUserByScenario[$userId] = $rows->groupBy('scenarios_id');
       }
 
-      // 8. Determinar o FINAL de cada jogador (VERSÃO SIMPLES E CORRETA)
+      // 8. Determinar o FINAL de cada jogador
       $finaisPorJogador = [];
 
       foreach ($gameUsuarios as $u) {
@@ -196,7 +194,6 @@ class GameService
             continue;
          }
 
-         // pegar a última resposta enviada (pela ordem das perguntas)
          $ultima = $respUser->sortBy('scenarios_id')->last();
 
          $optionId = $ultima->options_id ?? null;
@@ -206,10 +203,8 @@ class GameService
             continue;
          }
 
-         // FINAL = next_scenario_id da última opção escolhida
          $finalScenarioId = $optionsById[$optionId]->next_scenario_id ?? null;
 
-         // confirmar se realmente é cenário final
          if (
             $finalScenarioId
             && isset($scenariosById[$finalScenarioId])
@@ -220,9 +215,6 @@ class GameService
             $finaisPorJogador[$u->id] = null;
          }
       }
-
-
-
       return view('admin::layouts/master_gm', [
          'estatistica' => view('game::gm', [
             'gameUsuarios'     => $gameUsuarios,
@@ -235,38 +227,116 @@ class GameService
       ]);
    }
 
+   public function downloadGM($chave)
+   {
+      $gameRow = DB::table('game')
+         ->whereRaw("sha1(id) = '{$chave}'")
+         ->first();
+      $game = $this->repository->find($gameRow->id);
 
+      $gameUsuarios = DB::table('game_app_usuario AS GS')
+         ->selectRaw("
+            GS.id,
+            P.nome,
+            P.email,
+            GS.status,
+            GS.total_points,
+            SEC_TO_TIME(TIMESTAMPDIFF(SECOND, GS.created_at, GS.finished_at)) AS total_tempo
+        ")
+         ->leftJoin('app_usuario AS P', 'GS.app_usuario_id', '=', 'P.id')
+         ->where("GS.game_id", $game->id)
+         ->orderBy('P.nome')
+         ->get();
 
+      $scenarioRoot = $game->scenario_id;
 
+      $allScenarios = DB::table('scenarios')
+         ->whereRaw("(id = ? OR root_scenario_id = ?)", [$scenarioRoot, $scenarioRoot])
+         ->orderBy('id')
+         ->get()
+         ->keyBy('id');
 
+      $finals = $allScenarios->filter(fn($s) => $s->is_finally == 1);
+      $scenarios = $allScenarios->filter(fn($s) => $s->is_finally == 0);
 
+      $optionsBF = DB::table('options')
+         ->whereIn('scenario_id', $allScenarios->pluck('id'))
+         ->get();
 
+      $optionsById = $optionsBF->keyBy('id');
 
+      $respostas = DB::table('game_scenario_answers')
+         ->whereIn('game_app_usuario_id', $gameUsuarios->pluck('id'))
+         ->get()
+         ->groupBy('game_app_usuario_id');
 
-   // public function gm($chave)
-   // {
-   //    $game = DB::table('game')
-   //       ->whereRaw("sha1(id) = '{$chave}'")
-   //       ->first();
+      $csv = "Jogador;Email;TotalPontos;TempoTotal";
 
-   //    $game = $this->repository->find($game->id);
-   //    $gameUsuarios = DB::table('game_app_usuario AS GS')
-   //       ->selectRaw("P.nome, P.email, GS.status,GS.total_points,
-   //       SEC_TO_TIME(TIMESTAMPDIFF(SECOND, GS.created_at, GS.finished_at)) AS total_tempo")
-   //       ->leftJoin('app_usuario AS P', 'GS.app_usuario_id', '=', 'P.id')
-   //       ->where("GS.game_id", '=', $game->id)
-   //       ->orderBy('P.nome')
-   //       ->get();
+      foreach ($scenarios as $s) {
+         $csv .= ";" . $s->title;
+      }
 
-   //    $tema = DB::table('tema')->where('id', '=', $game->tema_id)->first();
+      foreach ($finals as $fid => $fname) {
+         $csv .= ";Final - " . $fname->title;
+      }
+      $csv .= "\n";
 
+      foreach ($gameUsuarios as $u) {
 
+         $csv .=
+            ($u->nome ?? '') . ";" .
+            ($u->email ?? '') . ";" .
+            ($u->total_points ?? '') . ";" .
+            ($u->total_tempo ?? '');
 
+         $linhaPerguntas = array_fill_keys($scenarios->keys()->toArray(), "");
+         $respUser = $respostas[$u->id] ?? collect();
+         $ultimaResposta = null;
 
-   //    $estatistica = view('game::gm', ['gameUsuarios' => $gameUsuarios, 'game' => $game, 'tema' => $tema,]);
+         foreach ($respUser as $r) {
+            $option = $optionsById[$r->options_id] ?? null;
 
-   //    return view('admin::layouts/master_gm', ['estatistica' =>  $estatistica]);
-   // }
+            if ($option) {
+               $linhaPerguntas[$r->scenarios_id] =
+                  !empty($r->message) ? $r->message : $option->title;
+               $ultimaResposta = $r;
+            }
+         }
+
+         foreach ($linhaPerguntas as $resp) {
+            $csv .= ";" . $resp;
+         }
+
+         $finalDoJogador = null;
+
+         if ($ultimaResposta) {
+            $optionId = $ultimaResposta->options_id;
+            $op = $optionsById[$optionId] ?? null;
+
+            if ($op && $op->next_scenario_id) {
+               $next = $op->next_scenario_id;
+
+               if (isset($allScenarios[$next]) && $allScenarios[$next]->is_finally == 1) {
+                  $finalDoJogador = $next;
+               }
+            }
+         }
+
+         foreach ($finals as $fid => $fname) {
+            $csv .= ";" . ($fid == $finalDoJogador ? "X" : "");
+         }
+
+         $csv .= "\n";
+      }
+
+      $fileName = "gm_game_{$game->id}.csv";
+
+      header('Content-Type: text/csv; charset=UTF-8');
+      header("Content-Disposition: attachment; filename=\"$fileName\"");
+
+      echo $csv;
+      exit;
+   }
 
    // Força a finalização da partida.
    public function finalizaPartida($id)

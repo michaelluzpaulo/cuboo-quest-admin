@@ -49,6 +49,16 @@
                         value="<?php echo __date_time_mysql_to_iso($game->game_time_final); ?>" disabled>
                 </div>
             </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="download" class="control-label">Download</label>
+                     <a href="{{ route('games.downloadGM', ['chave' => sha1($game->id)]) }}"
+   class="btn btn-primary btn-block"
+   target="_blank">
+   Download
+</a>
+                </div>
+            </div>
 
             <div class="col-md-12">
                 <hr />
@@ -74,48 +84,53 @@
                           </tr>
                         </thead>
                          <tbody>
-                          @foreach($gameUsuarios as $u)
-                             @php
-                             $respUser = $respostas[$u->id] ?? collect();
-                             $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
-                             @endphp
+                            @foreach($gameUsuarios as $u)
+                              @php
+                                          $respUser = $respostas[$u->id] ?? collect();
+                                      $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
+                                     @endphp
 
-                           <tr>
-                             <td>{{ $u->nome }}</td>
-                             <td>{{ $u->email }}</td>
-                             <td>{{ $u->total_points }}</td>
-                             <td>{{ $u->total_tempo }}</td>
+                                  <tr>
+                                      <td>{{ $u->nome }}</td>
+                                     <td>{{ $u->email }}</td>
+                                     <td>{{ $u->total_points }}</td>
+                                    <td>{{ $u->total_tempo }}</td>
 
                                 @foreach($listaCenarios as $item)
-                            @php
-                             $cenario = $item->scenario;
-                             $idCenario = $cenario->id;
-                             $isFinal = $cenario->is_finally === 'S';
+                                     @php
+                                       $cenario = $item->scenario;
+                                       $idCenario = $cenario->id;
+                                       $isFinal = $cenario->is_finally === 'S';
+                                       $resp = $respUser->firstWhere('scenarios_id', $idCenario);
 
-                             $resp = $respUser->firstWhere('scenarios_id', $idCenario);
-                             $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
-                             @endphp
+                                    @endphp
 
-                              <td class="text-center">
+                                  <td class="text-center">
+                                   {{-- PERGUNTA NORMAL --}}
+                                     @if(!$isFinal)
+                                       @if($resp)
+                                          <span style="color: green; font-weight: bold;">✔</span>
 
-                                 {{-- PERGUNTA NORMAL --}}
-                                 @if(!$isFinal)
-                                 @if($resp)
-                                     <span style="color: green; font-weight: bold;">✔</span>
-                                 @endif
+                                          {{-- MENSAGEM DO JOGADOR --}}
+                                          @if(!empty($resp->message))
+                                              <div style="font-size: 11px; color: #444; margin-top: 4px; text-align:left;">
+                                                  <strong>Mensagem:</strong><br>
+                                                  {{ $resp->message }}
+                                              </div>
+                                          @endif
+                                      @endif
 
-                                 {{-- FINAL --}}
-                                 @else
-                                   @if($idCenario == $finalDoJogador)
-    <span style="color:red;font-weight:bold;">✔ FINAL</span>
-@endif
-                                 @endif
+                                      {{-- FINAL --}}
+                                         @else
+                                             @if($idCenario == $finalDoJogador)
+                                                 <span style="color:red;font-weight:bold;">✔ FINAL</span>
+                                             @endif
+                                         @endif
 
-                             </td>
-                            @endforeach
-                          </tr>
-
-                         @endforeach
+                                  </td>
+                        @endforeach
+                      </tr>
+                       @endforeach
                         </tbody>
                     </table>
                 </div>

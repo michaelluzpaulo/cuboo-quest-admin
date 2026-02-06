@@ -29,4 +29,6 @@ Route::group(['middleware' => ['web'], 'prefix' => 'admin/games'], function () {
 
 Route::group(['middleware' => ['web'], 'prefix' => 'gm'], function () {
    Route::get('/{chave}', 'GameController@gm');
+   Route::get('/{chave}/download', 'GameController@downloadGM')
+      ->name('games.downloadGM');
 });

@@ -45,6 +45,8 @@ class OptionService
          return __format_error_html($v);
       }
 
+      $data['is_message'] = isset($data['is_message']) ? 1 : 0;
+
       try {
 
          if ($id) {

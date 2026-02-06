@@ -202,6 +202,36 @@ class ApiController extends Controller
       }
    }
 
+   public function storeAnswer(Request $request, $gameId)
+   {
+      try {
+         $user_id = $this->getDecodeToken()['id'];
+
+         $gameUser = DB::table('game_app_usuario')
+            ->where('game_id', $gameId)
+            ->where('app_usuario_id', $user_id)
+            ->first();
+
+         DB::table('game_scenario_answers')->insert([
+            'scenarios_id' => $request->scenario_id,
+            'options_id' => $request->option_id ?? null,
+            'game_app_usuario_id' => $gameUser->id,
+            'points' => $request->points ?? 0,
+            'message' => $request->message ?? null,
+         ]);
+
+         return response()->json([
+            'error' => 0,
+            'message' => 'Resposta salva com sucesso!'
+         ], 200);
+      } catch (\Exception $e) {
+         return response()->json([
+            'error' => 1,
+            'message' => $e->getMessage()
+         ], 400);
+      }
+   }
+
    public function getPlayerStatus($id)
    {
       try {
@@ -270,36 +300,6 @@ class ApiController extends Controller
          return response()->json([
             'error' => 1,
             'message' => $e->getMessage(),
-         ], 400);
-      }
-   }
-
-   public function storeAnswer(Request $request, $gameId)
-   {
-      try {
-         $user_id = $this->getDecodeToken()['id'];
-
-         $gameUser = DB::table('game_app_usuario')
-            ->where('game_id', $gameId)
-            ->where('app_usuario_id', $user_id)
-            ->first();
-
-         DB::table('game_scenario_answers')->insert([
-            'scenarios_id' => $request->scenario_id,
-            // 'options_id' => $request->option_id,
-            'options_id' => $request->option_id ?? null,
-            'game_app_usuario_id' => $gameUser->id,
-            'points' => $request->points ?? 0,
-         ]);
-
-         return response()->json([
-            'error' => 0,
-            'message' => 'Resposta salva com sucesso!'
-         ], 200);
-      } catch (\Exception $e) {
-         return response()->json([
-            'error' => 1,
-            'message' => $e->getMessage()
          ], 400);
       }
    }

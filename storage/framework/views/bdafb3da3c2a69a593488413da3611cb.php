@@ -49,6 +49,16 @@
                         value="<?php echo __date_time_mysql_to_iso($game->game_time_final); ?>" disabled>
                 </div>
             </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="download" class="control-label">Download</label>
+                     <a href="<?php echo e(route('games.downloadGM', ['chave' => sha1($game->id)])); ?>"
+   class="btn btn-primary btn-block"
+   target="_blank">
+   Download
+</a>
+                </div>
+            </div>
 
             <div class="col-md-12">
                 <hr />
@@ -75,48 +85,54 @@
                           </tr>
                         </thead>
                          <tbody>
-                          <?php $__currentLoopData = $gameUsuarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $u): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                             <?php
-                             $respUser = $respostas[$u->id] ?? collect();
-                             $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
-                             ?>
+                            <?php $__currentLoopData = $gameUsuarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $u): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                              <?php
+                                          $respUser = $respostas[$u->id] ?? collect();
+                                      $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
+                                     ?>
 
-                           <tr>
-                             <td><?php echo e($u->nome); ?></td>
-                             <td><?php echo e($u->email); ?></td>
-                             <td><?php echo e($u->total_points); ?></td>
-                             <td><?php echo e($u->total_tempo); ?></td>
+                                  <tr>
+                                      <td><?php echo e($u->nome); ?></td>
+                                     <td><?php echo e($u->email); ?></td>
+                                     <td><?php echo e($u->total_points); ?></td>
+                                    <td><?php echo e($u->total_tempo); ?></td>
 
                                 <?php $__currentLoopData = $listaCenarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <?php
-                             $cenario = $item->scenario;
-                             $idCenario = $cenario->id;
-                             $isFinal = $cenario->is_finally === 'S';
+                                     <?php
+                                       $cenario = $item->scenario;
+                                       $idCenario = $cenario->id;
+                                       $isFinal = $cenario->is_finally === 'S';
+                                       $resp = $respUser->firstWhere('scenarios_id', $idCenario);
 
-                             $resp = $respUser->firstWhere('scenarios_id', $idCenario);
-                             $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
-                             ?>
+                                    ?>
 
-                              <td class="text-center">
+                                  <td class="text-center">
+                                   
+                                     <?php if(!$isFinal): ?>
+                                       <?php if($resp): ?>
+                                          <span style="color: green; font-weight: bold;">✔</span>
 
-                                 
-                                 <?php if(!$isFinal): ?>
-                                 <?php if($resp): ?>
-                                     <span style="color: green; font-weight: bold;">✔</span>
-                                 <?php endif; ?>
+                                          
+                                          <?php if(!empty($resp->message)): ?>
+                                              <div style="font-size: 11px; color: #444; margin-top: 4px; text-align:left;">
+                                                  <strong>Mensagem:</strong><br>
+                                                  <?php echo e($resp->message); ?>
 
-                                 
-                                 <?php else: ?>
-                                   <?php if($idCenario == $finalDoJogador): ?>
-    <span style="color:red;font-weight:bold;">✔ FINAL</span>
-<?php endif; ?>
-                                 <?php endif; ?>
+                                              </div>
+                                          <?php endif; ?>
+                                      <?php endif; ?>
 
-                             </td>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                          </tr>
+                                      
+                                         <?php else: ?>
+                                             <?php if($idCenario == $finalDoJogador): ?>
+                                                 <span style="color:red;font-weight:bold;">✔ FINAL</span>
+                                             <?php endif; ?>
+                                         <?php endif; ?>
 
-                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                  </td>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                      </tr>
+                       <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </tbody>
                     </table>
                 </div>

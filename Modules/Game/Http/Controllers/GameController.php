@@ -89,6 +89,10 @@ class GameController extends Controller
    {
       return $this->service->gm($chave);
    }
+   public function downloadGM($chave)
+   {
+      return $this->service->downloadGM($chave);
+   }
 
    /**
     * Update the specified resource in storage.

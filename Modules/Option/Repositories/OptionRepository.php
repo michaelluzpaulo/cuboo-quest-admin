@@ -17,7 +17,7 @@ class OptionRepository extends AbstractRepository implements RepositoryInterface
     * @var string
     */
    protected $table = "options";
-   protected $fillable = ['title', 'description', 'points', 'scenario_id', 'next_scenario_id'];
+   protected $fillable = ['title', 'description', 'points', 'scenario_id', 'next_scenario_id', 'code', 'is_message'];
    //protected $guarded = ['id'];
    public $timestamps = false;
 
