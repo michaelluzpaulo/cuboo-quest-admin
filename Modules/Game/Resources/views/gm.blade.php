@@ -89,29 +89,22 @@
                                           $respUser = $respostas[$u->id] ?? collect();
                                       $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
                                      @endphp
-
                                   <tr>
                                       <td>{{ $u->nome }}</td>
                                      <td>{{ $u->email }}</td>
                                      <td>{{ $u->total_points }}</td>
                                     <td>{{ $u->total_tempo }}</td>
-
                                 @foreach($listaCenarios as $item)
                                      @php
                                        $cenario = $item->scenario;
                                        $idCenario = $cenario->id;
                                        $isFinal = $cenario->is_finally === 'S';
                                        $resp = $respUser->firstWhere('scenarios_id', $idCenario);
-
                                     @endphp
-
                                   <td class="text-center">
-                                   {{-- PERGUNTA NORMAL --}}
                                      @if(!$isFinal)
                                        @if($resp)
                                           <span style="color: green; font-weight: bold;">✔</span>
-
-                                          {{-- MENSAGEM DO JOGADOR --}}
                                           @if(!empty($resp->message))
                                               <div style="font-size: 11px; color: #444; margin-top: 4px; text-align:left;">
                                                   <strong>Mensagem:</strong><br>
@@ -119,8 +112,6 @@
                                               </div>
                                           @endif
                                       @endif
-
-                                      {{-- FINAL --}}
                                          @else
                                              @if($idCenario == $finalDoJogador)
                                                  <span style="color:red;font-weight:bold;">✔ FINAL</span>

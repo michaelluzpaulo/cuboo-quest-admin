@@ -106,7 +106,6 @@ class GameService
 
    public function gm($chave)
    {
-      // 1. Buscar o game pela hash
       $gameRow = DB::table('game')
          ->whereRaw("sha1(id) = '{$chave}'")
          ->first();
@@ -114,7 +113,6 @@ class GameService
       $game = $this->repository->find($gameRow->id);
       $tema = DB::table('tema')->where('id', $game->tema_id)->first();
 
-      // 2. Jogadores do game
       $gameUsuarios = DB::table('game_app_usuario AS GS')
          ->selectRaw("
             GS.id,
@@ -129,7 +127,6 @@ class GameService
          ->orderBy('P.nome')
          ->get();
 
-      // 3. Carregar TODOS os cenários ligados ao game (ordenados por id)
       $scenarioRoot = $game->scenario_id;
       $scenariosBF = DB::table('scenarios')
          ->whereRaw("(id = ? OR root_scenario_id = ?)", [$scenarioRoot, $scenarioRoot])
@@ -137,7 +134,6 @@ class GameService
 
       $scenariosById = $scenariosBF->keyBy('id');
 
-      // 4. Buscar todas as opções relacionadas (para lookup por id e por scenario)
       $optionsBF = DB::table('options')
          ->whereIn('scenario_id', $scenariosBF->pluck('id'))
          ->get();
@@ -147,13 +143,11 @@ class GameService
       foreach ($optionsBF as $op) {
          $optionsByScenario[$op->scenario_id][] = $op;
       }
-      // 5. Separar perguntas e finais
       $perguntas = $scenariosBF->where('is_finally', 0);
       $finais    = $scenariosBF->where('is_finally', 1);
 
       $perguntasOrdenadas = $perguntas->sortBy('id');
 
-      // 6. Criar lista final: PERGUNTAS → FINAIS
       $listaCenarios = collect();
 
       foreach ($perguntasOrdenadas as $p) {
@@ -170,7 +164,6 @@ class GameService
          ]);
       }
 
-      // 7. Respostas dos jogadores (agrupadas)
       $gameUsuarioIds = $gameUsuarios->pluck('id')->toArray();
       $respostas = DB::table('game_scenario_answers')
          ->whereIn('game_app_usuario_id', $gameUsuarioIds)
@@ -182,7 +175,6 @@ class GameService
          $respostasByUserByScenario[$userId] = $rows->groupBy('scenarios_id');
       }
 
-      // 8. Determinar o FINAL de cada jogador
       $finaisPorJogador = [];
 
       foreach ($gameUsuarios as $u) {
