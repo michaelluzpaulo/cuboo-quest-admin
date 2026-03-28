@@ -77,6 +77,7 @@ class ApiController extends Controller
          ]);
 
          $game = DB::table('game')->whereRaw("id = '{$id}'")->first();
+         $game->token_game = sha1($id);
 
          return response()->json(['error' => 0, 'game' =>  $game, 'date_now' => __nowDateUtcToDB()], 200);
       } catch (Exception $e) {

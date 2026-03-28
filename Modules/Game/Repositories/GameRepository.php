@@ -151,6 +151,7 @@ class GameRepository extends AbstractRepository implements RepositoryInterface
             "<a href='{$url2}/login/" . $chave . "' target='_blank'>{$url2}/login/" . $chave . "</a>",
             "<a href='{$urlGM}/gm/" . $chave . "' target='_blank'>Link</a>",
             "<a href='{$url2}/mestre/" . $chave . "' target='_blank'>Link</a>",
+            "<a href='{$url2}/ranking/" . $chave . "' target='_blank'>Link</a>",
          ];
       }
 

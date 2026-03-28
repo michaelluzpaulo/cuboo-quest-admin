@@ -90,29 +90,22 @@
                                           $respUser = $respostas[$u->id] ?? collect();
                                       $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
                                      ?>
-
                                   <tr>
                                       <td><?php echo e($u->nome); ?></td>
                                      <td><?php echo e($u->email); ?></td>
                                      <td><?php echo e($u->total_points); ?></td>
                                     <td><?php echo e($u->total_tempo); ?></td>
-
                                 <?php $__currentLoopData = $listaCenarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                      <?php
                                        $cenario = $item->scenario;
                                        $idCenario = $cenario->id;
                                        $isFinal = $cenario->is_finally === 'S';
                                        $resp = $respUser->firstWhere('scenarios_id', $idCenario);
-
                                     ?>
-
                                   <td class="text-center">
-                                   
                                      <?php if(!$isFinal): ?>
                                        <?php if($resp): ?>
                                           <span style="color: green; font-weight: bold;">✔</span>
-
-                                          
                                           <?php if(!empty($resp->message)): ?>
                                               <div style="font-size: 11px; color: #444; margin-top: 4px; text-align:left;">
                                                   <strong>Mensagem:</strong><br>
@@ -121,8 +114,6 @@
                                               </div>
                                           <?php endif; ?>
                                       <?php endif; ?>
-
-                                      
                                          <?php else: ?>
                                              <?php if($idCenario == $finalDoJogador): ?>
                                                  <span style="color:red;font-weight:bold;">✔ FINAL</span>

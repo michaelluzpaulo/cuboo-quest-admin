@@ -39,11 +39,15 @@ Route::controller(ApiController::class)->group(function () {
 
    Route::get('/game/{id}/scenario', 'scenario');
    Route::get('/game/{id}/player-status', 'getPlayerStatus');
-   Route::get('/game/{id}/ranking', 'ranking');
+   // Route::get('/game/{id}/ranking', 'ranking');
    Route::post('/game/{gameId}/answer', 'storeAnswer');
    // Route::get('/game/{gameId}/master', 'master');
 });
 
 Route::prefix('mestre')->group(function () {
    Route::get('/{chave}', [ApiController::class, 'mestre']);
+});
+
+Route::prefix('ranking')->group(function () {
+   Route::get('/{chave}', [ApiController::class, 'ranking']);
 });

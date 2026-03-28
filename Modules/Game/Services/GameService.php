@@ -384,6 +384,9 @@ class GameService
             case 5:
                $sort = 'MESTRE';
                break;
+            case 6:
+               $sort = 'RANKING';
+               break;
          }
 
          $start = (int)$request->get('start');
