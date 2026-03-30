@@ -126,6 +126,7 @@ class GameRepository extends AbstractRepository implements RepositoryInterface
 
       $url = env('APP_ENV') == 'local' ? "http://localhost:3000" : "https://";
       $urlGM = env('APP_ENV') == 'local' ? "http://localhost:8000" : "https://quest-admin.cuboogame.com";
+      $urlBase = env('APP_ENV') == 'local' ? "http://localhost:3000" : "https://quest.cuboogame.com";
       $d1 = new \DateTime(date('Y-m-d H:i:s'));
 
       foreach ($result as $row) {
@@ -151,7 +152,7 @@ class GameRepository extends AbstractRepository implements RepositoryInterface
             "<a href='{$url2}/login/" . $chave . "' target='_blank'>{$url2}/login/" . $chave . "</a>",
             "<a href='{$urlGM}/gm/" . $chave . "' target='_blank'>Link</a>",
             "<a href='{$url2}/mestre/" . $chave . "' target='_blank'>Link</a>",
-            "<a href='{$url2}/ranking/" . $chave . "' target='_blank'>Link</a>",
+            "<a href='{$urlBase}/ranking/" . $chave . "' target='_blank'>Link</a>",
          ];
       }
 

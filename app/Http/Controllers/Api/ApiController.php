@@ -19,6 +19,7 @@ class ApiController extends Controller
          'register',
          'tema',
          'mestre',
+         'ranking',
       ]]);
    }
 

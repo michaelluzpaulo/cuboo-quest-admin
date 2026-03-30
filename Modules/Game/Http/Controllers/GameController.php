@@ -94,6 +94,7 @@ class GameController extends Controller
       return $this->service->downloadGM($chave);
    }
 
+
    /**
     * Update the specified resource in storage.
     * @param  Request $request
