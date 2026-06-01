@@ -59,6 +59,33 @@ class GameService
       $obj->fill($data);
       $obj->save();
 
+
+    // -------------------------------------------------
+    // --- AGRUPADOR (aqui é o local correto!)
+    // -------------------------------------------------
+    $agrupadorId = null;
+
+    if (!empty($data['novo_agrupador'])) {
+        // cria novo agrupador
+        $agrupadorId = DB::table('game_agrupador')->insertGetId([
+            'nome'       => $data['novo_agrupador'],
+            'game_id'    => $obj->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    } elseif (!empty($data['agrupador_id'])) {
+        // usa agrupador existente
+        $agrupadorId = $data['agrupador_id'];
+    }
+
+    // vincula o game ao agrupador
+    if ($agrupadorId) {
+        DB::table('game')
+            ->where('id', $obj->id)
+            ->update(['agrupador_id' => $agrupadorId]);
+    }
+    // -------------------------------------------------
+
       return response()->json(['error' => 0, 'message' => 'O registro foi salvo com sucesso.', 'data' => ['id' => $obj->id]], 200);
    }
 
@@ -70,8 +97,9 @@ class GameService
       $scenario = DB::table('scenarios')
          ->whereRaw("root_scenario_id IS NULL")
          ->get();
+      $agrupadores = DB::table('game_agrupador')->get();
 
-      return view('game::create', ['temas' => $temas, 'scenario' => $scenario, 'date_expiracao' => $d->format('d/m/Y',)]);
+      return view('game::create', ['temas' => $temas, 'scenario' => $scenario,'agrupadores' => $agrupadores, 'date_expiracao' => $d->format('d/m/Y',)]);
    }
 
    public function edit($id)
@@ -95,11 +123,17 @@ class GameService
          ->where('id', '=', $game->scenario_id)
          ->first();
 
+         $agrupador = null;
+         if ($game->agrupador_id) {
+            $agrupador = DB::table('game_agrupador')->where('id', $game->agrupador_id)->first();
+         }
+
       return view('game::edit', [
          'gameUsuarios' => $gameUsuarios,
          'game' => $game,
          'tema' => $tema,
          'scenarios' => $scenarios,
+         'agrupador' => $agrupador,
       ]);
    }
 

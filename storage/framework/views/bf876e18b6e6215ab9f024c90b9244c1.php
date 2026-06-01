@@ -16,13 +16,20 @@
                         value="<?php echo $game->nome; ?>" disabled>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="form-group">
                     <label for="temax" class="control-label">Tema: </label>
                     <input type="text" class="form-control" name="temax" id="temax" maxlength="70"
                         value="<?php echo $tema->titulo . " ({$tema->idioma})"; ?>" disabled>
                 </div>
             </div>
+            <div class="col-md-2">
+    <div class="form-group">
+        <label class="control-label" for="Agrupador">Agrupador:</label>
+        <input type="text" class="form-control"
+               value="<?php echo e($agrupador ? $agrupador->nome : 'Nenhum'); ?>" disabled>
+    </div>
+</div>
             <div class="col-md-6">
                 <div class="form-group">
                     <label for="scenariosx" class="control-label">Scenario Raiz: </label>

@@ -50,6 +50,25 @@
                         id="date_expiracao" value="<?php echo e($date_expiracao); ?>">
                 </div>
             </div>
+            <div class="col-lg-6">
+    <div class="form-group">
+        <label for="agrupador_id" class="control-label">Agrupador:</label>
+        <select class="form-select" name="agrupador_id" id="agrupador_id">
+            <option value="">Nenhum agrupador</option>
+            <?php $__currentLoopData = $agrupadores; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $agrupador): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <option value="<?php echo e($agrupador->id); ?>"><?php echo e($agrupador->nome); ?></option>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        </select>
+    </div>
+</div>
+
+<div class="col-lg-6">
+    <div class="form-group">
+        <label for="novo_agrupador" class="control-label">Criar novo agrupador:</label>
+        <input type="text" class="form-control" id="novo_agrupador" name="novo_agrupador" placeholder="Digite para criar">
+        <small class="text-muted">Se preencher este campo, ignora o select acima.</small>
+    </div>
+</div>
 
         </div>
     </div>
