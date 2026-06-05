@@ -56,35 +56,34 @@ class GameService
       $tema = DB::table('tema')->where('id', '=', $data['tema_id'])->first();
       $data['idioma'] = $tema->idioma;
       $data['date_expiracao'] = __date_iso_to_mysql($data['date_expiracao']);
+
+      if (empty($data['agrupador_id'])) {
+         $data['agrupador_id'] = null;
+      }
+
       $obj->fill($data);
       $obj->save();
 
+      //  AGRUPADOR
+      $agrupadorId = $data['agrupador_id'] ?? null;
 
-    // -------------------------------------------------
-    // --- AGRUPADOR (aqui é o local correto!)
-    // -------------------------------------------------
-    $agrupadorId = null;
+      if (!empty($data['novo_agrupador'])) {
 
-    if (!empty($data['novo_agrupador'])) {
-        // cria novo agrupador
-        $agrupadorId = DB::table('game_agrupador')->insertGetId([
+         $agrupadorId = DB::table('game_agrupador')->insertGetId([
             'nome'       => $data['novo_agrupador'],
             'game_id'    => $obj->id,
             'created_at' => now(),
             'updated_at' => now(),
-        ]);
-    } elseif (!empty($data['agrupador_id'])) {
-        // usa agrupador existente
-        $agrupadorId = $data['agrupador_id'];
-    }
+         ]);
+      }
 
-    // vincula o game ao agrupador
-    if ($agrupadorId) {
-        DB::table('game')
+      if ($agrupadorId && $obj->agrupador_id != $agrupadorId) {
+         DB::table('game')
             ->where('id', $obj->id)
-            ->update(['agrupador_id' => $agrupadorId]);
-    }
-    // -------------------------------------------------
+            ->update([
+               'agrupador_id' => $agrupadorId
+            ]);
+      }
 
       return response()->json(['error' => 0, 'message' => 'O registro foi salvo com sucesso.', 'data' => ['id' => $obj->id]], 200);
    }
@@ -99,15 +98,13 @@ class GameService
          ->get();
       $agrupadores = DB::table('game_agrupador')->get();
 
-      return view('game::create', ['temas' => $temas, 'scenario' => $scenario,'agrupadores' => $agrupadores, 'date_expiracao' => $d->format('d/m/Y',)]);
+      return view('game::create', ['temas' => $temas, 'scenario' => $scenario, 'agrupadores' => $agrupadores, 'date_expiracao' => $d->format('d/m/Y',)]);
    }
 
    public function edit($id)
    {
-      // Busca o game
       $game = $this->repository->find($id);
 
-      // Busca os usuários do game
       $gameUsuarios = DB::table('game_app_usuario AS GS')
          ->selectRaw("P.nome, P.email, GS.status,GS.total_points,
          SEC_TO_TIME(TIMESTAMPDIFF(SECOND, GS.created_at, GS.finished_at)) AS total_tempo")
@@ -116,17 +113,16 @@ class GameService
          ->orderBy('P.nome')
          ->get();
 
-      // Busca o tema do game
       $tema = DB::table('tema')->where('id', '=', $game->tema_id)->first();
 
       $scenarios = DB::table('scenarios')
          ->where('id', '=', $game->scenario_id)
          ->first();
 
-         $agrupador = null;
-         if ($game->agrupador_id) {
-            $agrupador = DB::table('game_agrupador')->where('id', $game->agrupador_id)->first();
-         }
+      $agrupador = null;
+      if ($game->agrupador_id) {
+         $agrupador = DB::table('game_agrupador')->where('id', $game->agrupador_id)->first();
+      }
 
       return view('game::edit', [
          'gameUsuarios' => $gameUsuarios,

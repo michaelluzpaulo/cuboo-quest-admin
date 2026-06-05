@@ -118,11 +118,10 @@ class ApiController extends Controller
          $game = DB::table('game')
             ->where('id', $id)
             ->first();
+         Cache::forget("ranking_game_{$id}");
 
          if (!empty($game->agrupador_id)) {
             Cache::forget("ranking_agrupador_{$game->agrupador_id}");
-         } else {
-            Cache::forget("ranking_game_{$id}");
          }
          // codigo para cache FIM
 
@@ -272,97 +271,9 @@ class ApiController extends Controller
    }
 
 
-   // public function ranking($id)
-   // {
-   //    try {
-
-   //       $game = DB::table('game')
-   //          ->where('id', $id)
-   //          ->first();
-
-   //       if (!$game) {
-   //          return response()->json([
-   //             'error' => 1,
-   //             'message' => 'Jogo não encontrado'
-   //          ], 404);
-   //       }
-
-   //       // Por padrão considera apenas o jogo atual
-   //       $gameIds = collect([$id]);
-
-   //       // Se existir agrupador, busca todos os jogos do agrupador
-   //       if (!empty($game->agrupador_id)) {
-   //          $gameIds = DB::table('game')
-   //             ->where('agrupador_id', $game->agrupador_id)
-   //             ->pluck('id');
-   //       }
-
-   //       $players = DB::table('game_app_usuario')
-   //          ->join(
-   //             'app_usuario',
-   //             'app_usuario.id',
-   //             '=',
-   //             'game_app_usuario.app_usuario_id'
-   //          )
-   //          ->select(
-   //             'app_usuario.id',
-   //             'app_usuario.nome as name',
-   //             'game_app_usuario.total_points as score',
-   //             'game_app_usuario.created_at',
-   //             'game_app_usuario.finished_at',
-   //             DB::raw("
-   //             CASE
-   //                WHEN game_app_usuario.finished_at IS NULL THEN 99999999
-   //                ELSE TIMESTAMPDIFF(
-   //                   SECOND,
-   //                   game_app_usuario.created_at,
-   //                   game_app_usuario.finished_at
-   //                )
-   //             END AS time_seconds
-   //          ")
-   //          )
-   //          ->whereIn('game_app_usuario.game_id', $gameIds)
-   //          ->orderByRaw("
-   //          CASE
-   //             WHEN game_app_usuario.total_points > 0 THEN 0
-   //             ELSE 1
-   //          END ASC
-   //       ")
-   //          ->orderBy('game_app_usuario.total_points', 'desc')
-   //          ->orderBy('time_seconds', 'asc')
-   //          ->get()
-   //          ->map(function ($player) {
-
-   //             if ($player->time_seconds == 99999999) {
-   //                $player->time_seconds = null;
-   //                $player->time_minutes = null;
-   //             } else {
-   //                $player->time_minutes = round(
-   //                   $player->time_seconds / 60,
-   //                   2
-   //                );
-   //             }
-
-   //             return $player;
-   //          });
-
-   //       return response()->json([
-   //          'error' => 0,
-   //          'ranking' => $players,
-   //       ]);
-   //    } catch (Exception $e) {
-
-   //       return response()->json([
-   //          'error' => 1,
-   //          'message' => $e->getMessage(),
-   //       ], 400);
-   //    }
-   // }
-
-   public function ranking($id)
+   public function ranking(Request $request, $id)
    {
       try {
-
          $game = DB::table('game')
             ->where('id', $id)
             ->first();
@@ -374,19 +285,24 @@ class ApiController extends Controller
             ], 404);
          }
 
-         $cacheKey = !empty($game->agrupador_id)
+         $type = (int) $request->query('type', 1);
+
+         $gameIds = collect([$id]);
+
+         if ($type === 2 && $game->agrupador_id) {
+
+            $gameIds = DB::table('game')
+               ->where('agrupador_id', $game->agrupador_id)
+               ->pluck('id');
+
+            $gameIds->push($id);
+         }
+
+         $cacheKey = $type === 2
             ? "ranking_agrupador_{$game->agrupador_id}"
             : "ranking_game_{$id}";
 
-         $players = Cache::remember($cacheKey, 60, function () use ($game, $id) {
-
-            $gameIds = collect([$id]);
-
-            if (!empty($game->agrupador_id)) {
-               $gameIds = DB::table('game')
-                  ->where('agrupador_id', $game->agrupador_id)
-                  ->pluck('id');
-            }
+         $players = Cache::remember($cacheKey, 30, function () use ($gameIds) {
 
             return DB::table('game_app_usuario')
                ->join(
@@ -395,12 +311,15 @@ class ApiController extends Controller
                   '=',
                   'game_app_usuario.app_usuario_id'
                )
+               ->join('game', 'game.id', '=', 'game_app_usuario.game_id')
                ->select(
                   'app_usuario.id',
                   'app_usuario.nome as name',
                   'game_app_usuario.total_points as score',
                   'game_app_usuario.created_at',
                   'game_app_usuario.finished_at',
+                  'game.agrupador_id as group_id',
+
                   DB::raw("
                   CASE
                      WHEN game_app_usuario.finished_at IS NULL THEN 99999999
@@ -423,17 +342,12 @@ class ApiController extends Controller
                ->orderBy('time_seconds', 'asc')
                ->get()
                ->map(function ($player) {
-
                   if ($player->time_seconds == 99999999) {
                      $player->time_seconds = null;
                      $player->time_minutes = null;
                   } else {
-                     $player->time_minutes = round(
-                        $player->time_seconds / 60,
-                        2
-                     );
+                     $player->time_minutes = round($player->time_seconds / 60, 2);
                   }
-
                   return $player;
                });
          });
@@ -442,8 +356,7 @@ class ApiController extends Controller
             'error' => 0,
             'ranking' => $players,
          ]);
-      } catch (Exception $e) {
-
+      } catch (\Exception $e) {
          return response()->json([
             'error' => 1,
             'message' => $e->getMessage(),
@@ -451,10 +364,58 @@ class ApiController extends Controller
       }
    }
 
+   public function rankingUnit($id)
+   {
+      try {
 
+         $user_id = $this->getDecodeToken()['id'];
 
+         $player = DB::table('game_app_usuario')
+            ->join(
+               'app_usuario',
+               'app_usuario.id',
+               '=',
+               'game_app_usuario.app_usuario_id'
+            )
+            ->select(
+               'app_usuario.id',
+               'app_usuario.nome as name',
+               'game_app_usuario.total_points as score',
+               'game_app_usuario.created_at',
+               'game_app_usuario.finished_at',
+               DB::raw("
+               CASE
+                  WHEN game_app_usuario.finished_at IS NULL THEN NULL
+                  ELSE TIMESTAMPDIFF(
+                     SECOND,
+                     game_app_usuario.created_at,
+                     game_app_usuario.finished_at
+                  )
+               END AS time_seconds
+            ")
+            )
+            ->where('game_app_usuario.game_id', $id)
+            ->where('game_app_usuario.app_usuario_id', $user_id)
+            ->first();
 
+         if (!$player) {
+            return response()->json([
+               'error' => 1,
+               'message' => 'Jogador não encontrado'
+            ], 404);
+         }
 
+         return response()->json([
+            'error' => 0,
+            'player' => $player
+         ]);
+      } catch (\Exception $e) {
+         return response()->json([
+            'error' => 1,
+            'message' => $e->getMessage(),
+         ], 400);
+      }
+   }
 
 
    public function mestre($id)

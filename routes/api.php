@@ -51,3 +51,7 @@ Route::prefix('mestre')->group(function () {
 Route::prefix('ranking')->group(function () {
    Route::get('/{chave}', [ApiController::class, 'ranking']);
 });
+
+Route::prefix('rankingUnit')->group(function () {
+   Route::get('/{chave}', [ApiController::class, 'rankingUnit']);
+});

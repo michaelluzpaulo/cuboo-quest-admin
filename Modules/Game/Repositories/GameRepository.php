@@ -13,7 +13,7 @@ use Modules\Admin\Repositories\RepositoryInterface;
 class GameRepository extends AbstractRepository implements RepositoryInterface
 {
    protected $table = "game";
-   protected $fillable = ['nome', 'ativo', 'game_time', 'game_time_final', 'created_at', 'updated_at', 'users_id', 'idioma', 'date_expiracao', 'tema_id', 'status', 'final_game_at', 'scenario_id', 'active_ranking'];
+   protected $fillable = ['nome', 'ativo', 'game_time', 'game_time_final', 'created_at', 'updated_at', 'users_id', 'idioma', 'date_expiracao', 'tema_id', 'status', 'final_game_at', 'scenario_id', 'active_ranking', 'agrupador_id', 'active_ranking_unit'];
    //protected $guarded = ['id'];
    public $timestamps = true;
 
@@ -153,6 +153,7 @@ class GameRepository extends AbstractRepository implements RepositoryInterface
             "<a href='{$urlGM}/gm/" . $chave . "' target='_blank'>Link</a>",
             "<a href='{$url2}/mestre/" . $chave . "' target='_blank'>Link</a>",
             "<a href='{$urlBase}/ranking/" . $chave . "' target='_blank'>Link</a>",
+            "<a href='{$urlBase}/ranking/" . $chave . "?type=2' target='_blank'>Link Grupo</a>",
          ];
       }
 

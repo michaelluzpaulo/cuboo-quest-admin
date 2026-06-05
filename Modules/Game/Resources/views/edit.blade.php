@@ -24,30 +24,37 @@
                 </div>
             </div>
             <div class="col-md-2">
-    <div class="form-group">
-        <label class="control-label" for="Agrupador">Agrupador:</label>
-        <input type="text" class="form-control"
-               value="{{ $agrupador ? $agrupador->nome : 'Nenhum' }}" disabled>
-    </div>
-</div>
+                <div class="form-group">
+                    <label class="control-label" for="Agrupador">Agrupador:</label>
+                    <input type="text" class="form-control" value="{{ $agrupador ? $agrupador->nome : 'Nenhum' }}"
+                        disabled>
+                </div>
+            </div>
             <div class="col-md-6">
                 <div class="form-group">
                     <label for="scenariosx" class="control-label">Scenario Raiz: </label>
                     <input type="text" class="form-control" name="scenariosx" id="scenariosx" maxlength="70"
-                         {{-- value="<//?php echo $scenarios->id; ?>" --}}
-                         value="{{ $scenarios->title ?? '' }}"
-                         disabled>
+                        {{-- value="<//?php echo $scenarios->id; ?>" --}} value="{{ $scenarios->title ?? '' }}" disabled>
                 </div>
             </div>
             <div class="col-md-2">
-    <div class="form-group">
-        <label for="active_ranking" class="control-label">Final com Ranking: </label>
-        <select class="form-control" name="active_ranking" id="active_ranking" disabled>
-            <option value="S" <?php echo $game->active_ranking == 'S' ? 'selected' : ''; ?>>Sim</option>
-            <option value="N" <?php echo $game->active_ranking == 'N' ? 'selected' : ''; ?>>Não</option>
-        </select>
-    </div>
-</div>
+                <div class="form-group">
+                    <label for="active_ranking" class="control-label">Final com Ranking: </label>
+                    <select class="form-control" name="active_ranking" id="active_ranking" disabled>
+                        <option value="S" <?php echo $game->active_ranking == 'S' ? 'selected' : ''; ?>>Sim</option>
+                        <option value="N" <?php echo $game->active_ranking == 'N' ? 'selected' : ''; ?>>Não</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="active_ranking_unit" class="control-label">Ranking Unitário: </label>
+                    <select class="form-control" name="active_ranking_unit" id="active_ranking_unit" disabled>
+                        <option value="S" <?php echo $game->active_ranking_unit == 'S' ? 'selected' : ''; ?>>Sim</option>
+                        <option value="N" <?php echo $game->active_ranking_unit == 'N' ? 'selected' : ''; ?>>Não</option>
+                    </select>
+                </div>
+            </div>
             <div class="col-md-2">
                 <div class="form-group">
                     <label for="ativox" class="control-label">Status: </label>

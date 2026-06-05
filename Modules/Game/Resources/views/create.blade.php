@@ -45,30 +45,44 @@
             </div>
             <div class="col-md-3">
                 <div class="form-group">
+                    <label for="active_ranking_unit" class="control-label">Ranking Unitário:</label>
+                    <select class="form-control" name="active_ranking_unit" id="active_ranking_unit">
+                        <option value="N" selected="selected">Não</option>
+                        <option value="S">Sim</option>
+
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
                     <label for="date_expiracao" class="control-label">Data de expiração: </label>
                     <input type="text" data-mask-type='datepicker' class="form-control" name="date_expiracao"
                         id="date_expiracao" value="{{ $date_expiracao }}">
                 </div>
             </div>
+            <div class="col-lg-12">
+                <hr />
+            </div>
             <div class="col-lg-6">
-    <div class="form-group">
-        <label for="agrupador_id" class="control-label">Agrupador:</label>
-        <select class="form-select" name="agrupador_id" id="agrupador_id">
-            <option value="">Nenhum agrupador</option>
-            @foreach ($agrupadores as $agrupador)
-                <option value="{{ $agrupador->id }}">{{ $agrupador->nome }}</option>
-            @endforeach
-        </select>
-    </div>
-</div>
+                <div class="form-group">
+                    <label for="agrupador_id" class="control-label">Agrupador:</label>
+                    <select class="form-select" name="agrupador_id" id="agrupador_id">
+                        <option value="">Nenhum agrupador</option>
+                        @foreach ($agrupadores as $agrupador)
+                            <option value="{{ $agrupador->id }}">{{ $agrupador->nome }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
 
-<div class="col-lg-6">
-    <div class="form-group">
-        <label for="novo_agrupador" class="control-label">Criar novo agrupador:</label>
-        <input type="text" class="form-control" id="novo_agrupador" name="novo_agrupador" placeholder="Digite para criar">
-        <small class="text-muted">Se preencher este campo, ignora o select acima.</small>
-    </div>
-</div>
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="novo_agrupador" class="control-label">Criar novo agrupador:</label>
+                    <input type="text" class="form-control" id="novo_agrupador" name="novo_agrupador"
+                        placeholder="Digite para criar">
+                    <small class="text-muted">Se preencher este campo, ignora o select acima.</small>
+                </div>
+            </div>
 
         </div>
     </div>
