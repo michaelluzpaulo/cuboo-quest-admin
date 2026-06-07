@@ -102,8 +102,8 @@ class ApiController extends Controller
    public function playerFinish(Request $request, $id)
    {
       try {
-         $user_id = $this->getDecodeToken()['id']; // pega ID do usuário logado
-         $totalPoints = $request->input('totalPoints', 0); // pega os pontos do front, default 0
+         $user_id = $this->getDecodeToken()['id'];
+         $totalPoints = $request->input('totalPoints', 0);
 
          DB::table('game_app_usuario')
             ->whereRaw("game_id = '{$id}'")
@@ -113,17 +113,6 @@ class ApiController extends Controller
                'total_points' => $totalPoints,
                'finished_at' => now(),
             ]);
-
-         // codigo para cache INICIO
-         $game = DB::table('game')
-            ->where('id', $id)
-            ->first();
-         Cache::forget("ranking_game_{$id}");
-
-         if (!empty($game->agrupador_id)) {
-            Cache::forget("ranking_agrupador_{$game->agrupador_id}");
-         }
-         // codigo para cache FIM
 
          return response()->json([
             'error' => 0,
@@ -234,6 +223,16 @@ class ApiController extends Controller
             'message' => $request->message ?? null,
          ]);
 
+         $totalPoints = DB::table('game_scenario_answers')
+            ->where('game_app_usuario_id', $gameUser->id)
+            ->sum('points');
+
+         DB::table('game_app_usuario')
+            ->where('id', $gameUser->id)
+            ->update([
+               'total_points' => $totalPoints
+            ]);
+
          return response()->json([
             'error' => 0,
             'message' => 'Resposta salva com sucesso!'
@@ -271,12 +270,12 @@ class ApiController extends Controller
    }
 
 
+
+
    public function ranking(Request $request, $id)
    {
       try {
-         $game = DB::table('game')
-            ->where('id', $id)
-            ->first();
+         $game = DB::table('game')->where('id', $id)->first();
 
          if (!$game) {
             return response()->json([
@@ -287,74 +286,47 @@ class ApiController extends Controller
 
          $type = (int) $request->query('type', 1);
 
-         $gameIds = collect([$id]);
-
-         if ($type === 2 && $game->agrupador_id) {
-
-            $gameIds = DB::table('game')
-               ->where('agrupador_id', $game->agrupador_id)
-               ->pluck('id');
-
-            $gameIds->push($id);
-         }
-
-         $cacheKey = $type === 2
-            ? "ranking_agrupador_{$game->agrupador_id}"
+         $cacheKey = $type === 2 && $game->agrupador_id
+            ? "ranking_agrupamento_{$game->agrupador_id}"
             : "ranking_game_{$id}";
 
-         $players = Cache::remember($cacheKey, 30, function () use ($gameIds) {
+         $ranking = Cache::remember($cacheKey, 30, function () use ($type, $game, $id) {
 
-            return DB::table('game_app_usuario')
+            $query =  DB::table('game_app_usuario', 'GAU')
                ->join(
-                  'app_usuario',
-                  'app_usuario.id',
+                  'app_usuario AS AU',
+                  'GAU.app_usuario_id',
                   '=',
-                  'game_app_usuario.app_usuario_id'
+                  'AU.id'
                )
-               ->join('game', 'game.id', '=', 'game_app_usuario.game_id')
-               ->select(
-                  'app_usuario.id',
-                  'app_usuario.nome as name',
-                  'game_app_usuario.total_points as score',
-                  'game_app_usuario.created_at',
-                  'game_app_usuario.finished_at',
-                  'game.agrupador_id as group_id',
+               ->join('game as G', 'G.id', '=', 'GAU.game_id')
+               ->selectRaw('AU.email,AU.nome, SUM(GAU.total_points) as score')
+               ->selectRaw("SUM(
+                                 TIMESTAMPDIFF(
+                                    SECOND,
+                                    GAU.created_at,
+                                    COALESCE(GAU.finished_at, NOW())
+                                 )
+                              ) AS time_seconds
+                           ")
+               ->groupBy('AU.id')
+               ->orderByRaw('score DESC, time_seconds ASC');
 
-                  DB::raw("
-                  CASE
-                     WHEN game_app_usuario.finished_at IS NULL THEN 99999999
-                     ELSE TIMESTAMPDIFF(
-                        SECOND,
-                        game_app_usuario.created_at,
-                        game_app_usuario.finished_at
-                     )
-                  END AS time_seconds
-               ")
-               )
-               ->whereIn('game_app_usuario.game_id', $gameIds)
-               ->orderByRaw("
-               CASE
-                  WHEN game_app_usuario.total_points > 0 THEN 0
-                  ELSE 1
-               END ASC
-            ")
-               ->orderBy('game_app_usuario.total_points', 'desc')
-               ->orderBy('time_seconds', 'asc')
-               ->get()
-               ->map(function ($player) {
-                  if ($player->time_seconds == 99999999) {
-                     $player->time_seconds = null;
-                     $player->time_minutes = null;
-                  } else {
-                     $player->time_minutes = round($player->time_seconds / 60, 2);
-                  }
-                  return $player;
-               });
+            if ($type === 2) {
+               // $query->where('GAU.agrupador_id', '=', $game->agrupador_id);
+               $query->where('G.agrupador_id', $game->agrupador_id);
+            } else {
+               $query->where('GAU.game_id', '=', $id);
+            }
+
+            $data = $query->get();
+
+            return $data;
          });
 
          return response()->json([
-            'error' => 0,
-            'ranking' => $players,
+            'success' => true,
+            'ranking' => $ranking,
          ]);
       } catch (\Exception $e) {
          return response()->json([
@@ -363,6 +335,7 @@ class ApiController extends Controller
          ], 400);
       }
    }
+
 
    public function rankingUnit($id)
    {

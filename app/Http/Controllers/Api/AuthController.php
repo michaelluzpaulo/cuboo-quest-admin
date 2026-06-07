@@ -25,6 +25,12 @@ class AuthController extends Controller
          'nome' => 'required|string',
       ]);
 
+      $nomes = array_filter(explode(' ', trim($request->nome)));
+
+      if (count($nomes) < 2) {
+         throw new Exception('Digite seu nome completo.');
+      }
+
       try {
          $user_id = 0;
          $userBF = DB::table('app_usuario')->where('email', '=', $request->email)->first();
@@ -43,28 +49,37 @@ class AuthController extends Controller
          }
 
          if ($userBF) {
+            // $user_id = $userBF->id;
+
+            DB::table('app_usuario')
+               ->where('id', $userBF->id)
+               ->update([
+                  'nome' => trim($request->nome)
+               ]);
+
             $user_id = $userBF->id;
          } else {
-            $user_id = DB::table('app_usuario')->insertGetId(['nome' => $request->nome, 'email' => $request->email, 'ativo' => 'S', 'password' => Hash::make('123456')]);
+            $user_id = DB::table('app_usuario')
+               ->insertGetId(['nome' => $request->nome, 'email' => $request->email, 'ativo' => 'S', 'password' => Hash::make('123456')]);
          }
 
          $gameAppUsuario = DB::table('game_app_usuario')
-         ->where('game_id', '=', $request->game_id)
-         ->where('app_usuario_id', '=', $user_id)
-         ->first();
+            ->where('game_id', '=', $request->game_id)
+            ->where('app_usuario_id', '=', $user_id)
+            ->first();
 
-        if (!$gameAppUsuario) {
+         if (!$gameAppUsuario) {
             DB::table('game_app_usuario')->insert([
-                'game_id' => $request->game_id,
-                'app_usuario_id' => $user_id,
-                'created_at' => __nowDateUtcToDB()
+               'game_id' => $request->game_id,
+               'app_usuario_id' => $user_id,
+               'created_at' => __nowDateUtcToDB()
             ]);
 
             $gameAppUsuario = DB::table('game_app_usuario')
-                ->where('game_id', '=', $request->game_id)
-                ->where('app_usuario_id', '=', $user_id)
-                ->first();
-        }
+               ->where('game_id', '=', $request->game_id)
+               ->where('app_usuario_id', '=', $user_id)
+               ->first();
+         }
 
          $data = ['email' => $request->email, 'password' => "123456", 'ativo' => "S"];
          $token = Auth::guard('api')->attempt($data);
