@@ -68,6 +68,7 @@ class ApiController extends Controller
    public function getGameInit($id)
    {
       try {
+         $user_id = $this->getDecodeToken()['id'];
          $game = DB::table('game')->whereRaw("id = '{$id}'")->first();
          $tema = DB::table('tema')->whereRaw("id = '{$game->tema_id}'")->first();
          $d = new DateTime(__nowDateUtcToDB());
@@ -79,6 +80,16 @@ class ApiController extends Controller
          ]);
 
          $game = DB::table('game')->whereRaw("id = '{$id}'")->first();
+
+         //pegar pergunta quando sair do jogo e entrar de novo
+         $gameUser = DB::table('game_app_usuario')
+            ->where('game_id', $id)
+            ->where('app_usuario_id', $user_id)
+            ->first();
+
+         $game->current_scenario_id = $gameUser->current_scenario_id ?? null;
+
+
          $game->token_game = sha1($id);
 
          return response()->json(['error' => 0, 'game' =>  $game, 'date_now' => __nowDateUtcToDB()], 200);
@@ -99,20 +110,58 @@ class ApiController extends Controller
       }
    }
 
+   // public function playerFinish(Request $request, $id)
+   // {
+   //    try {
+   //       $user_id = $this->getDecodeToken()['id'];
+   //       $totalPoints = $request->input('totalPoints', 0);
+
+   //       DB::table('game_app_usuario')
+   //          ->whereRaw("game_id = '{$id}'")
+   //          ->whereRaw("app_usuario_id = ?", [$user_id])
+   //          ->update([
+   //             'status' => 2,
+   //             'total_points' => $totalPoints,
+   //             'finished_at' => now(),
+   //          ]);
+
+   //       return response()->json([
+   //          'error' => 0,
+   //          'message' => 'Jogador finalizado com sucesso!',
+   //          'status' => 2,
+   //          'total_points' => $totalPoints
+   //       ], 200);
+   //    } catch (Exception $e) {
+   //       return response()->json([
+   //          'error' => 1,
+   //          'message' => $e->getMessage()
+   //       ], 400);
+   //    }
+   // }
+
    public function playerFinish(Request $request, $id)
    {
       try {
          $user_id = $this->getDecodeToken()['id'];
-         $totalPoints = $request->input('totalPoints', 0);
+
+         $gameUser = DB::table('game_app_usuario')
+            ->where('game_id', $id)
+            ->where('app_usuario_id', $user_id)
+            ->first();
+
+         $totalPoints = DB::table('game_scenario_answers')
+            ->where('game_app_usuario_id', $gameUser->id)
+            ->sum('points');
 
          DB::table('game_app_usuario')
-            ->whereRaw("game_id = '{$id}'")
-            ->whereRaw("app_usuario_id = ?", [$user_id])
+            ->where('id', $gameUser->id)
             ->update([
                'status' => 2,
                'total_points' => $totalPoints,
                'finished_at' => now(),
             ]);
+
+
 
          return response()->json([
             'error' => 0,
@@ -127,6 +176,11 @@ class ApiController extends Controller
          ], 400);
       }
    }
+
+
+
+
+
 
    public function gameFinish(Request $request, $id)
    {
@@ -223,15 +277,51 @@ class ApiController extends Controller
             'message' => $request->message ?? null,
          ]);
 
+
+
+
          $totalPoints = DB::table('game_scenario_answers')
             ->where('game_app_usuario_id', $gameUser->id)
             ->sum('points');
 
-         DB::table('game_app_usuario')
-            ->where('id', $gameUser->id)
-            ->update([
-               'total_points' => $totalPoints
-            ]);
+         if ($request->option_id) {
+            $option = DB::table('options')
+               ->where('id', $request->option_id)
+               ->first();
+
+            DB::table('game_app_usuario')
+               ->where('id', $gameUser->id)
+               ->update([
+                  'current_scenario_id' => $option->next_scenario_id,
+                  'total_points' => $totalPoints
+               ]);
+         } else {
+            DB::table('game_app_usuario')
+               ->where('id', $gameUser->id)
+               ->update([
+                  'total_points' => $totalPoints
+               ]);
+         }
+
+
+
+
+
+
+         // $option = DB::table('options')
+         //    ->where('id', $request->option_id)
+         //    ->first();
+
+         // $totalPoints = DB::table('game_scenario_answers')
+         //    ->where('game_app_usuario_id', $gameUser->id)
+         //    ->sum('points');
+
+         // DB::table('game_app_usuario')
+         //    ->where('id', $gameUser->id)
+         //    ->update([
+         //       'current_scenario_id' => $option->next_scenario_id,
+         //       'total_points' => $totalPoints
+         //    ]);
 
          return response()->json([
             'error' => 0,
@@ -268,9 +358,6 @@ class ApiController extends Controller
          return response()->json(['error' => 1, 'message' => $e->getMessage()], 400);
       }
    }
-
-
-
 
    public function ranking(Request $request, $id)
    {
@@ -313,7 +400,6 @@ class ApiController extends Controller
                ->orderByRaw('score DESC, time_seconds ASC');
 
             if ($type === 2) {
-               // $query->where('GAU.agrupador_id', '=', $game->agrupador_id);
                $query->where('G.agrupador_id', $game->agrupador_id);
             } else {
                $query->where('GAU.game_id', '=', $id);

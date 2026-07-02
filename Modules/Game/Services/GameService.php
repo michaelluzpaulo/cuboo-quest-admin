@@ -71,7 +71,6 @@ class GameService
 
          $agrupadorId = DB::table('game_agrupador')->insertGetId([
             'nome'       => $data['novo_agrupador'],
-            'game_id'    => $obj->id,
             'created_at' => now(),
             'updated_at' => now(),
          ]);
