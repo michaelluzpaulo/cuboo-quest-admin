@@ -23,6 +23,7 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'admin/scenarios'], f
    Route::post('/', 'ScenarioController@store');
    Route::put('/{id}', 'ScenarioController@update');
    Route::delete('/{id}', 'ScenarioController@destroy');
+   Route::post('/{id}/clone', 'ScenarioController@cloneScenario');
 
    Route::get('/{scenario_id}/options/data', [OptionController::class, "data"]);
    Route::get('/{scenario_id}/options/create', [OptionController::class, "create"]);
@@ -31,4 +32,5 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'admin/scenarios'], f
    Route::post('/{scenario_id}/options/', [OptionController::class, "store"]);
    Route::put('/{scenario_id}/options/{id}', [OptionController::class, "update"]);
    Route::delete('/{scenario_id}/options/{id}', [OptionController::class, "destroy"]);
+   
 });

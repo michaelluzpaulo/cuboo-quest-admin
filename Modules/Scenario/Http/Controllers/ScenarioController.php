@@ -80,6 +80,11 @@ class ScenarioController extends Controller
       return $this->service->edit($id);
    }
 
+   public function cloneScenario($id)
+   {
+      return $this->service->cloneScenario($id);
+   }
+
    /**
     * Update the specified resource in storage.
     * @param  Request $request
@@ -99,4 +104,6 @@ class ScenarioController extends Controller
    {
       return $this->service->destroy($id);
    }
+
+   
 }

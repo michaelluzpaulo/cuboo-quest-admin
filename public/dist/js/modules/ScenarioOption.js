@@ -108,7 +108,7 @@ const ScenarioOption = (function () {
                            rowData["DT_RowId"] +
                            '" class="btn btn-secondary ' +
                            _tableTdClass +
-                           '"><i class="fa fa-edit"></i></button>'
+                           '"><i class="fa fa-edit"></i></button>',
                      );
                },
             },
@@ -145,7 +145,7 @@ const ScenarioOption = (function () {
          function (responseText, textStatus, jqXHR) {
             if (textStatus === "success") {
                $(
-                  ".notify, .notification, .alert-success, .alert-danger"
+                  ".notify, .notification, .alert-success, .alert-danger",
                ).fadeOut(300);
 
                if (Validator.IsJsonString(responseText)) {
@@ -159,7 +159,7 @@ const ScenarioOption = (function () {
             } else {
                ServiceHttp.exceptionLoad(responseText, textStatus, jqXHR);
             }
-         }
+         },
       );
    }
 
@@ -183,7 +183,7 @@ const ScenarioOption = (function () {
             } else {
                ServiceHttp.exceptionLoad(responseText, textStatus, jqXHR);
             }
-         }
+         },
       );
    }
 
@@ -193,6 +193,15 @@ const ScenarioOption = (function () {
    function __save() {
       const id = parseInt($("#id", _formId).val());
       let data = $(_formId).serializeJSON();
+
+      // Tratamento do campo 'code' antes do envio
+      if (data.code) {
+         data.code = data.code
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase();
+      }
+
       const method = id ? "PUT" : "POST";
       const url = id
          ? `/admin/scenarios/${_scenarioId}/options/${id}`
@@ -223,7 +232,7 @@ const ScenarioOption = (function () {
             if (error.response) {
                ServiceHttp.exception(
                   error.response.status,
-                  error.response.data.message
+                  error.response.data.message,
                );
             } else {
                console.log(error, error.message);
@@ -254,7 +263,7 @@ const ScenarioOption = (function () {
                   ServiceHttp.exceptionAjax(jqXHR, textStatus, errorThrown);
                },
             });
-         }
+         },
       );
    }
 

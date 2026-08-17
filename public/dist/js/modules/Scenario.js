@@ -35,6 +35,9 @@ const Scenario = (function () {
       $(".run-btn-delete", _modalId).on("click", function () {
          __delete();
       });
+      $(".js-run-clone", _modalId).on("click", function () {
+         __clone();
+      });
       $(_formId).on("submit", function (e) {
          if ($(_formId).valid()) {
             e.preventDefault();
@@ -281,6 +284,31 @@ const Scenario = (function () {
          }
       );
    }
+
+function __clone() {
+      const id = $("#id", _formId).val();
+      Notify.confirm(
+         "Você confirma a clonagem do registro?<br />Após a confirmação será impossível reverter o comando.",
+         function () {
+            $.ajax({
+               type: "POST",
+               url: `/admin/scenarios/${id}/clone`,
+               dataType: "json",
+               timeout: 120000,
+               success: function (json) {
+                  $("#confirmModal").modal("hide");
+                  $(_modalId).modal("hide");
+                  Notify.success(json.message);
+                  __refreshTable();
+               },
+               error: function (jqXHR, textStatus, errorThrown) {
+                  ServiceHttp.exceptionAjax(jqXHR, textStatus, errorThrown);
+               },
+            });
+         }
+      );
+   }
+
 
    return {
       init: __init,

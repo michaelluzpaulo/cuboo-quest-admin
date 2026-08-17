@@ -5,7 +5,7 @@
     </div>
     <div class="modal-body">
         <input type="hidden" name="id" id="id" value="<?php echo $option->id; ?>">
-        <input type="hidden" name="scenario_id" id="scenario_id" value="{{ $scenario_id }}">
+        <input type="hidden" name="scenario_id" id="scenario_id" value="<?php echo e($scenario_id); ?>">
                <div class="row">
                      <div class="col-md-12">
                          <div class="form-group">
@@ -40,11 +40,12 @@
                          <div class="form-group">
                          <label for="next_scenario_id" class="control-label">Próximo Cenário:</label>
                        <select name="next_scenario_id" class="form-control">
-                               @foreach($nextScenarios  as $root)
-                          <option value="{{ $root->id }}" {{ $option->next_scenario_id == $root->id ? 'selected' : '' }}>
-                             {{ $root->title }}
+                               <?php $__currentLoopData = $nextScenarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $root): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                          <option value="<?php echo e($root->id); ?>" <?php echo e($option->next_scenario_id == $root->id ? 'selected' : ''); ?>>
+                             <?php echo e($root->title); ?>
+
                           </option>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                       </select>
                        </div>
                     </div>
@@ -69,3 +70,4 @@
         <button type="button" class="btn btn-danger run-btn-delete"><i class="bi bi-trash"></i> Excluir</button>
     </div>
 </form>
+<?php /**PATH C:\www\cuboo_group\quest_group\cuboo-quest-admin\Modules/Option\Resources/views/edit.blade.php ENDPATH**/ ?>

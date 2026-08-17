@@ -5,7 +5,7 @@
     </div>
     <div class="modal-body">
         <input type="hidden" name="id" id="id" value="0">
-        <input type="hidden" name="scenario_id" id="scenario_id" value="{{ $scenario_id }}">
+        <input type="hidden" name="scenario_id" id="scenario_id" value="<?php echo e($scenario_id); ?>">
         <div class="row">
             <div class="col-md-12">
                 <div class="form-group">
@@ -39,9 +39,9 @@
                      <label for="next_scenario_id">Próximo Cenário:</label>
                          <select name="next_scenario_id" class="form-control">
                              <option value="">Selecione</option>
-                             @foreach($nextScenarios as $root)
-                                 <option value="{{ $root->id }}">{{ $root->title }}</option>
-                             @endforeach
+                             <?php $__currentLoopData = $nextScenarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $root): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                 <option value="<?php echo e($root->id); ?>"><?php echo e($root->title); ?></option>
+                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                          </select>
                   </div>
             </div>
@@ -61,3 +61,4 @@
         <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Salvar</button>
     </div>
 </form>
+<?php /**PATH C:\www\cuboo_group\quest_group\cuboo-quest-admin\Modules/Option\Resources/views/create.blade.php ENDPATH**/ ?>

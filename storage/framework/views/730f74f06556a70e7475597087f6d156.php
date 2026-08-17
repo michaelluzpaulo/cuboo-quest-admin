@@ -32,12 +32,13 @@
                             <label for="root_scenario_id" class="control-label">Raiz do Cenário:</label>
                             <select name="root_scenario_id" class="form-control">
                                 <option value="">Raiz</option>
-                                @foreach ($rootScenarios as $root)
-                                    <option value="{{ $root->id }}"
-                                        {{ $scenario->root_scenario_id == $root->id ? 'selected' : '' }}>
-                                        {{ $root->title }}
+                                <?php $__currentLoopData = $rootScenarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $root): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($root->id); ?>"
+                                        <?php echo e($scenario->root_scenario_id == $root->id ? 'selected' : ''); ?>>
+                                        <?php echo e($root->title); ?>
+
                                     </option>
-                                @endforeach
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </select>
                         </div>
                     </div>
@@ -45,12 +46,13 @@
                         <div class="form-group">
                             <label for="idioma" class="control-label">Idioma:</label>
                             <select class="form-control" name="sigla" id="idioma" required>
-                                @foreach ($idiomas as $idioma)
-                                    <option value="{{ $idioma->sigla }}"
-                                        {{ isset($scenario) && $scenario->sigla == $idioma->sigla ? 'selected' : '' }}>
-                                        {{ $idioma->sigla }}
+                                <?php $__currentLoopData = $idiomas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $idioma): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($idioma->sigla); ?>"
+                                        <?php echo e(isset($scenario) && $scenario->sigla == $idioma->sigla ? 'selected' : ''); ?>>
+                                        <?php echo e($idioma->sigla); ?>
+
                                     </option>
-                                @endforeach
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </select>
                         </div>
                     </div>
@@ -108,14 +110,9 @@
         <button type="button" class="btn btn-default" data-bs-dismiss="modal"><i class="bi bi-door-closed"></i>
             Fechar
         </button>
-        {{-- @if (empty($scenario->root_scenario_id))
-            <button type="button" class="btn btn-info js-run-clone" data-bs-dismiss="modal">
-                <i class="far fa-clone"></i>
-                Clonar
-            </button>
-        @endif --}}
+        
         
         <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Salvar</button>
         <button type="button" class="btn btn-danger run-btn-delete"><i class="bi bi-trash"></i> Excluir</button>
     </div>
-</form>
+</form><?php /**PATH C:\www\cuboo_group\quest_group\cuboo-quest-admin\Modules/Scenario\Resources/views/edit.blade.php ENDPATH**/ ?>
