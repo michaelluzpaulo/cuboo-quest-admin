@@ -38,6 +38,7 @@ class OptionRepository extends AbstractRepository implements RepositoryInterface
             'D.id',
             'D.title',
             'D.points',
+            'D.code',
             'D.next_scenario_id',
             'S.title AS next_scenario_title'
          )
@@ -71,6 +72,7 @@ class OptionRepository extends AbstractRepository implements RepositoryInterface
             $row->id,
             $row->title,
             $row->points,
+            $row->code,
             $row->next_scenario_title,
          ];
       }

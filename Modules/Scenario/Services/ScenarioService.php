@@ -137,9 +137,6 @@ class ScenarioService
             case 2:
                $sort = 'is_finally';
                break;
-            case 3:
-               $sort = 'code';
-               break;
          }
 
          $start = (int)$request->get('start');

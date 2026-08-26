@@ -87,7 +87,6 @@
                                         <th>Título</th>
                                         <th class="text-center">Tela Raiz</th>
                                         <th class="text-center">Tela Final</th>
-                                        <th>Código</th>
                                         <th class="text-center">Editar</th>
 
                                     </tr>

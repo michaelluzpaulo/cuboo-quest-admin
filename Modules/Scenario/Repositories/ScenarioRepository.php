@@ -32,16 +32,8 @@ class ScenarioRepository extends AbstractRepository implements RepositoryInterfa
 
       // Carrega os registro conforme filtros aplicados.
       $select = DB::table('scenarios AS D')
-         ->leftJoin('options AS O', 'O.scenario_id', '=', 'D.id')
          ->select(
             'D.*',
-            DB::raw('GROUP_CONCAT(
-         CASE
-            WHEN O.code IS NOT NULL AND TRIM(O.code) != ""
-            THEN O.code
-         END
-         SEPARATOR ", "
-      ) as code')
          );
 
       if ($query_params['search']['id'] > 0) {
@@ -87,7 +79,6 @@ class ScenarioRepository extends AbstractRepository implements RepositoryInterfa
             $row->title,
             $row->root_scenario_id === null ? 'S' : 'N',
             $row->is_finally == 0 ? 'N' : 'S',
-            $row->code,
          ];
       }
 

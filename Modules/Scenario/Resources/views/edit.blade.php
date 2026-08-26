@@ -88,6 +88,7 @@
                                         <th>ID</th>
                                         <th>Título</th>
                                         <th>Pontos</th>
+                                        <th>Código</th>
                                         <th>Próximo</th>
                                         <th class="text-center">Editar</th>
                                     </tr>
