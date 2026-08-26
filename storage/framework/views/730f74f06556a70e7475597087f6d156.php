@@ -110,9 +110,10 @@
         <button type="button" class="btn btn-default" data-bs-dismiss="modal"><i class="bi bi-door-closed"></i>
             Fechar
         </button>
-        
-        
+
+
         <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Salvar</button>
         <button type="button" class="btn btn-danger run-btn-delete"><i class="bi bi-trash"></i> Excluir</button>
     </div>
-</form><?php /**PATH C:\www\cuboo_group\quest_group\cuboo-quest-admin\Modules/Scenario\Resources/views/edit.blade.php ENDPATH**/ ?>
+</form>
+<?php /**PATH C:\www\cuboo_group\quest_group\cuboo-quest-admin\Modules/Scenario\Resources/views/edit.blade.php ENDPATH**/ ?>

@@ -108,13 +108,8 @@
         <button type="button" class="btn btn-default" data-bs-dismiss="modal"><i class="bi bi-door-closed"></i>
             Fechar
         </button>
-        {{-- @if (empty($scenario->root_scenario_id))
-            <button type="button" class="btn btn-info js-run-clone" data-bs-dismiss="modal">
-                <i class="far fa-clone"></i>
-                Clonar
-            </button>
-        @endif --}}
-        
+
+
         <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Salvar</button>
         <button type="button" class="btn btn-danger run-btn-delete"><i class="bi bi-trash"></i> Excluir</button>
     </div>

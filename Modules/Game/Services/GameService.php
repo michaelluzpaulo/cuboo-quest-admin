@@ -144,13 +144,14 @@ class GameService
 
       $gameUsuarios = DB::table('game_app_usuario AS GS')
          ->selectRaw("
-            GS.id,
-            P.nome,
-            P.email,
-            GS.status,
-            GS.total_points,
-            SEC_TO_TIME(TIMESTAMPDIFF(SECOND, GS.created_at, GS.finished_at)) AS total_tempo
-        ")
+      GS.id,
+      P.nome,
+      P.email,
+      GS.status,
+      GS.total_points,
+      GS.current_scenario_id,
+      SEC_TO_TIME(TIMESTAMPDIFF(SECOND, GS.created_at, GS.finished_at)) AS total_tempo
+   ")
          ->leftJoin('app_usuario AS P', 'GS.app_usuario_id', '=', 'P.id')
          ->where("GS.game_id", $game->id)
          ->orderBy('P.nome')
@@ -199,43 +200,8 @@ class GameService
          ->get()
          ->groupBy('game_app_usuario_id');
 
-      $respostasByUserByScenario = [];
-      foreach ($respostas as $userId => $rows) {
-         $respostasByUserByScenario[$userId] = $rows->groupBy('scenarios_id');
-      }
 
-      $finaisPorJogador = [];
 
-      foreach ($gameUsuarios as $u) {
-
-         $respUser = $respostas[$u->id] ?? collect();
-
-         if ($respUser->isEmpty()) {
-            $finaisPorJogador[$u->id] = null;
-            continue;
-         }
-
-         $ultima = $respUser->sortBy('scenarios_id')->last();
-
-         $optionId = $ultima->options_id ?? null;
-
-         if (!$optionId || !isset($optionsById[$optionId])) {
-            $finaisPorJogador[$u->id] = null;
-            continue;
-         }
-
-         $finalScenarioId = $optionsById[$optionId]->next_scenario_id ?? null;
-
-         if (
-            $finalScenarioId
-            && isset($scenariosById[$finalScenarioId])
-            && $scenariosById[$finalScenarioId]->is_finally === 'S'
-         ) {
-            $finaisPorJogador[$u->id] = $finalScenarioId;
-         } else {
-            $finaisPorJogador[$u->id] = null;
-         }
-      }
       return view('admin::layouts/master_gm', [
          'estatistica' => view('game::gm', [
             'gameUsuarios'     => $gameUsuarios,
@@ -243,7 +209,6 @@ class GameService
             'tema'             => $tema,
             'listaCenarios'    => $listaCenarios,
             'respostas'        => $respostas,
-            'finaisPorJogador' => $finaisPorJogador
          ])
       ]);
    }

@@ -77,7 +77,7 @@
                                   <th>
                                  <?php echo e($item->scenario->title); ?>
 
-                                 <?php if($item->scenario->is_finally === 'S'): ?>
+                                 <?php if($item->scenario->is_finally === '1'): ?>
                                      (Final)
                                  <?php endif; ?>
                                  </th>
@@ -87,8 +87,8 @@
                          <tbody>
                             <?php $__currentLoopData = $gameUsuarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $u): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                               <?php
-                                          $respUser = $respostas[$u->id] ?? collect();
-                                      $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
+                                           $respUser = $respostas[$u->id] ?? collect();
+    $currentScenarioId = $u->current_scenario_id;
                                      ?>
                                   <tr>
                                       <td><?php echo e($u->nome); ?></td>
@@ -99,7 +99,7 @@
                                      <?php
                                        $cenario = $item->scenario;
                                        $idCenario = $cenario->id;
-                                       $isFinal = $cenario->is_finally === 'S';
+                                       $isFinal = $cenario->is_finally === '1';
                                        $resp = $respUser->firstWhere('scenarios_id', $idCenario);
                                     ?>
                                   <td class="text-center">
@@ -115,8 +115,8 @@
                                           <?php endif; ?>
                                       <?php endif; ?>
                                          <?php else: ?>
-                                             <?php if($idCenario == $finalDoJogador): ?>
-                                                 <span style="color:red;font-weight:bold;">✔ FINAL</span>
+                                             <?php if($idCenario == $currentScenarioId): ?>
+                                                 <span style="color:blue;font-weight:bold;">✔</span>
                                              <?php endif; ?>
                                          <?php endif; ?>
 

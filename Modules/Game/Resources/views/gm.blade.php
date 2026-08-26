@@ -76,7 +76,7 @@
                                  @foreach($listaCenarios as $item)
                                   <th>
                                  {{ $item->scenario->title }}
-                                 @if($item->scenario->is_finally === 'S')
+                                 @if($item->scenario->is_finally === '1')
                                      (Final)
                                  @endif
                                  </th>
@@ -86,8 +86,8 @@
                          <tbody>
                             @foreach($gameUsuarios as $u)
                               @php
-                                          $respUser = $respostas[$u->id] ?? collect();
-                                      $finalDoJogador = $finaisPorJogador[$u->id] ?? null;
+                                           $respUser = $respostas[$u->id] ?? collect();
+    $currentScenarioId = $u->current_scenario_id;
                                      @endphp
                                   <tr>
                                       <td>{{ $u->nome }}</td>
@@ -98,7 +98,7 @@
                                      @php
                                        $cenario = $item->scenario;
                                        $idCenario = $cenario->id;
-                                       $isFinal = $cenario->is_finally === 'S';
+                                       $isFinal = $cenario->is_finally === '1';
                                        $resp = $respUser->firstWhere('scenarios_id', $idCenario);
                                     @endphp
                                   <td class="text-center">
@@ -113,8 +113,8 @@
                                           @endif
                                       @endif
                                          @else
-                                             @if($idCenario == $finalDoJogador)
-                                                 <span style="color:red;font-weight:bold;">✔ FINAL</span>
+                                             @if($idCenario == $currentScenarioId)
+                                                 <span style="color:blue;font-weight:bold;">✔</span>
                                              @endif
                                          @endif
 
